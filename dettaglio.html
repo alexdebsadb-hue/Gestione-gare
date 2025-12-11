@@ -1,37 +1,49 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dettaglio Gara</title>
-    <link rel="stylesheet" href="style.css"> 
-</head>
-<body>
-    <div class="container">
+<div class="container">
         <a href="index.html" class="back-link">&leftarrow; Torna al Calendario</a>
         
         <h1 id="detail-title">Caricamento Gara...</h1>
         <p class="subtitle" id="detail-date"></p>
         
         <div class="detail-box">
-            <h2>🎯 Obiettivo & Ruolo</h2>
-            <p id="detail-ruolo"></p>
+            <h2>📍 Luogo & Dettagli Gara</h2>
+            <p id="detail-luogo"></p>
+            <p id="detail-tipo"></p>
+        </div>
+
+        <div class="detail-box">
+            <h2>🎯 Obiettivo o Risultato Finale</h2>
+            <p id="detail-stato"></p> 
             <p id="detail-obiettivo"></p>
         </div>
         
-        <div class="detail-box">
-            <h2>🔗 Risorse</h2>
-            <p>Sito Ufficiale: <a id="detail-sito" target="_blank">Link non disponibile</a></p>
-        </div>
+4. 📝 Aggiorna detail_script.js (Per mostrare Luogo e PB)
+Infine, modifica il file detail_script.js su GitHub per leggere i nuovi dati:
 
-        <div class="detail-box">
-            <h2>🍽️ Protocollo Gara (Nutrizione)</h2>
-            <div id="protocollo-gara-content"></div>
-        </div>
-        
-    </div>
+JavaScript
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="detail_script.js"></script> 
-</body>
-</html>
+// ... (codice iniziale, URL)
+
+function renderDetails(race) {
+    document.getElementById('detail-title').textContent = race.Evento;
+    document.getElementById('detail-date').textContent = `${formatDate(race.Data)}`; 
+    
+    // NUOVI CAMPI LUOGO
+    document.getElementById('detail-luogo').innerHTML = `**Luogo:** ${race.Città}, ${race.Regione}`;
+    document.getElementById('detail-tipo').innerHTML = `**Tipo di Gara:** ${race.Tipo} (${race.Distanza})`;
+    
+    // Logica Stato/Obiettivo/Risultato
+    const isPastRace = race.Data && race.Data < new Date().toISOString().split('T')[0];
+    let statoFinale = isPastRace ? (race['Tempo Finale'] ? 'Completata' : 'Ritirata') : 'In Programma';
+    let obiettivoRisultato = isPastRace ? (race['Tempo Finale'] || 'Tempo non registrato') : (race.Obiettivo || 'Obiettivo non definito');
+    
+    // Aggiungi marcatore PB se presente
+    if (isPastRace && race.PB === 'X') { // Assumendo che 'X' sia il marcatore di PB nel foglio
+        obiettivoRisultato += ' ⭐️ (Personal Best)';
+    }
+
+    document.getElementById('detail-stato').innerHTML = `**Stato:** ${statoFinale}`;
+    document.getElementById('detail-obiettivo').innerHTML = `**${isPastRace ? 'Tempo Finale' : 'Obiettivo'}:** ${obiettivoRisultato}`;
+    
+    // ... (Logica SitoWeb e Protocollo Gara invariata)
+}
+// ... (il resto del codice rimane invariato)
