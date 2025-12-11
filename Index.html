@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Gare - Il Mio Calendario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Il Mio Calendario Gare</h1>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Cerca evento, ruolo o data...">
+            <label for="filterSelect">Filtra per Ruolo:</label>
+            <select id="filterSelect">
+                <option value="">Tutti i Ruoli</option>
+                </select>
+        </div>
+
+        <table id="racesTable">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Evento</th>
+                    <th>Ruolo Strategico</th>
+                    <th>Pace Target / Obiettivo</th>
+                </tr>
+            </thead>
+            <tbody id="racesTableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 30px;
+}
+
+/* Stili per Controlli e Form */
+.controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+#searchInput, #filterSelect {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    flex-grow: 1; 
+}
+
+#filterSelect {
+    flex-grow: 0;
+    min-width: 150px;
+}
+
+/* Stili per la Tabella */
+#racesTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#racesTable th, #racesTable td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#racesTable thead {
+    background-color: #007bff;
+    color: #fff;
+}
+
+#racesTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#racesTable tbody tr:hover {
+    background-color: #e6f7ff;
+}
+
+/* Stile per evidenziare le gare passate */
+.past-race {
+    color: #888;
+    font-style: italic;
+    background-color: #f0f0f0;
+}
+
+/* Stili per la pagina Dettaglio */
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.detail-box {
+    background-color: #f9f9f9;
+    padding: 15px;
+    margin-top: 20px;
+    border-left: 5px solid #007bff;
+    border-radius: 4px;
+}
+
+.detail-box h2 {
+    color: #007bff;
+    margin-top: 0;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    color: #555;
+    text-align: center;
+}

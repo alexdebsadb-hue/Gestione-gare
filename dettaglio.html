@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dettaglio Gara</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&leftarrow; Torna al Calendario</a>
+        
+        <h1 id="detail-title">Caricamento Gara...</h1>
+        <p class="subtitle" id="detail-date"></p>
+        
+        <div class="detail-box">
+            <h2>🎯 Obiettivo & Ruolo</h2>
+            <p id="detail-ruolo"></p>
+            <p id="detail-obiettivo"></p>
+        </div>
+        
+        <div class="detail-box">
+            <h2>🔗 Risorse</h2>
+            <p>Sito Ufficiale: <a id="detail-sito" target="_blank">Link non disponibile</a></p>
+        </div>
+
+        <div class="detail-box">
+            <h2>🍽️ Protocollo Gara (Nutrizione)</h2>
+            <div id="protocollo-gara-content"></div>
+        </div>
+        
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="detail_script.js"></script> 
+</body>
+</html>
