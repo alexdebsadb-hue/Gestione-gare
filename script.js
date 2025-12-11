@@ -181,3 +181,4 @@ function renderDetails(race) {
     // ... (Logica SitoWeb e Protocollo Gara invariata)
 }
 // ... (il resto del codice rimane invariato)
+
