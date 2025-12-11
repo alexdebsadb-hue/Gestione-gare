@@ -8,7 +8,8 @@ body {
 }
 
 .container {
-    max-width: 1100px;
+    /* Aumentato lo spazio massimo per accogliere più colonne */
+    max-width: 1300px; 
     margin: 40px auto;
     padding: 20px;
     background: #fff;
@@ -40,7 +41,7 @@ h1 {
 
 #filterSelect {
     flex-grow: 0;
-    min-width: 150px;
+    min-width: 120px;
 }
 
 /* Stili per la Tabella */
@@ -48,17 +49,22 @@ h1 {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    /* Assicura che la tabella non sia compressa orizzontalmente */
+    table-layout: fixed; 
 }
 
 #racesTable th, #racesTable td {
-    padding: 12px 15px;
+    padding: 12px 8px; /* Ridotto il padding per salvare spazio */
     text-align: left;
     border-bottom: 1px solid #ddd;
+    /* Permette al testo lungo di andare a capo */
+    word-wrap: break-word; 
 }
 
 #racesTable thead {
     background-color: #007bff;
     color: #fff;
+    font-size: 0.9em; /* Testo leggermente più piccolo per le intestazioni */
 }
 
 #racesTable tbody tr:nth-child(even) {
@@ -75,6 +81,14 @@ h1 {
     font-style: italic;
     background-color: #f0f0f0;
 }
+
+/* Stile per la cella PB con la stella */
+td:nth-child(5) { 
+    font-size: 1.2em;
+    font-weight: bold;
+    color: gold; 
+}
+
 
 /* Stili per la pagina Dettaglio */
 .back-link {
