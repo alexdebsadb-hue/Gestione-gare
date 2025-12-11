@@ -182,3 +182,4 @@ function renderDetails(race) {
 }
 // ... (il resto del codice rimane invariato)
 
+
