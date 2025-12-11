@@ -14,24 +14,30 @@ function formatDate(dateString) {
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
-        header: true,
+        header: true, 
         skipEmptyLines: true,
         complete: function(results) {
-            // Mappiamo e normalizziamo le chiavi, includendo il nuovo campo ID
+            // Mappatura AGGIORNATA per includere Città, Regione, e PB
             raceData = results.data.map(row => ({
-                ID: row.ID, // ATTENZIONE: Questa colonna deve esistere nel tuo foglio Google!
+                ID: row.ID, 
                 data: row.Data,
                 evento: row.Evento,
-                ruolo: row['Ruolo Strategico'],
-                obiettivo: row['Pace Target / Obiettivo']
+                tipo: row.Tipo, 
+                distanza: row.Distanza, 
+                citta: row.Città,
+                regione: row.Regione,
+                obiettivo: row.Obiettivo,
+                tempoFinale: row['Tempo Finale'] || '',
+                pb: row.PB || '', // Nuovo campo PB
+                sitoWeb: row.SitoWeb || ''
             }));
             
-            populateFilters();
+            populateFilters(); 
             renderTable(raceData);
         },
         error: function(error) {
             console.error("Errore nel caricamento del foglio di calcolo:", error);
-            tableBody.innerHTML = '<tr><td colspan="4">Errore nel caricamento dei dati. Controlla l\'URL.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6">Errore nel caricamento dei dati. Controlla l\'URL.</td></tr>';
         }
     });
 }
@@ -40,71 +46,138 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     data.sort((a, b) => new Date(a.data) - new Date(b.data));
     const today = new Date().toISOString().split('T')[0];
+    
+    // Ridisegna l'intestazione: AGGIUNTO Città/Regione e PB
+    const tableHeader = document.querySelector('#racesTable thead tr');
+    tableHeader.innerHTML = `
+        <th>Data</th>
+        <th>Evento (Tipo/Distanza)</th>
+        <th>Città / Regione</th>
+        <th>Obiettivo / Risultato</th>
+        <th>PB</th>
+        <th>Stato</th>
+    `;
 
     data.forEach(race => {
         const row = tableBody.insertRow();
-        
-        if (race.data && race.data < today) {
+        const isPastRace = race.data && race.data < today;
+
+        if (isPastRace) {
             row.classList.add('past-race');
         }
-
-        // Cell 1: Data
+        
+        // 1. Data
         row.insertCell().textContent = formatDate(race.data);
         
-        // Cell 2: Evento (Trasformato in link alla pagina di dettaglio)
+        // 2. Evento (link a dettaglio)
         const eventCell = row.insertCell();
         const eventLink = document.createElement('a');
-        
-        // Usa l'ID per creare il link: dettaglio.html?id=X
-        if (race.ID) {
-            eventLink.href = `dettaglio.html?id=${race.ID}`; 
-        } else {
-            // Se manca l'ID, non è un link cliccabile
-            eventLink.href = "#"; 
-        }
-        
-        eventLink.textContent = race.evento;
+        eventLink.href = `dettaglio.html?id=${race.ID}`; 
+        eventLink.textContent = `${race.evento} (${race.tipo} ${race.distanza})`; 
         eventCell.appendChild(eventLink);
         
-        // Cell 3 & 4: Ruolo e Obiettivo
-        row.insertCell().textContent = race.ruolo;
-        row.insertCell().textContent = race.obiettivo;
+        // 3. Città / Regione
+        row.insertCell().textContent = `${race.citta} (${race.regione})`;
+
+        // 4. Obiettivo / Risultato Finale
+        let risultato = '';
+        if (isPastRace) {
+            risultato = race.tempoFinale || 'N/D';
+        } else {
+            risultato = race.obiettivo || 'Tempo da definire';
+        }
+        row.insertCell().textContent = risultato;
+
+        // 5. PB
+        const pbCell = row.insertCell();
+        pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; // Mostra stella solo se PB è marcato X e gara è passata
+        pbCell.style.textAlign = 'center';
+        
+        // 6. Stato
+        const stato = isPastRace ? (race.tempoFinale ? 'Completata' : 'Ritirata') : 'In Programma';
+        row.insertCell().textContent = stato;
     });
 }
 
 function filterRaces() {
     const searchText = searchInput.value.toLowerCase();
-    const selectedRole = filterSelect.value;
-
+    
     const filteredData = raceData.filter(race => {
+        // Aggiunti Città, Regione, Tipo e Distanza alla ricerca
         const matchesSearch = 
             (race.evento && race.evento.toLowerCase().includes(searchText)) ||
-            (race.ruolo && race.ruolo.toLowerCase().includes(searchText)) ||
-            (race.obiettivo && race.obiettivo.toLowerCase().includes(searchText));
+            (race.tipo && race.tipo.toLowerCase().includes(searchText)) ||
+            (race.distanza && race.distanza.toLowerCase().includes(searchText)) ||
+            (race.citta && race.citta.toLowerCase().includes(searchText)) ||
+            (race.regione && race.regione.toLowerCase().includes(searchText));
 
-        const matchesRole = selectedRole === '' || (race.ruolo && race.ruolo === selectedRole);
-
-        return matchesSearch && matchesRole;
+        return matchesSearch;
     });
 
     renderTable(filteredData);
 }
 
 function populateFilters() {
-    const uniqueRoles = [...new Set(raceData.map(race => race.ruolo).filter(Boolean))];
-    
-    filterSelect.innerHTML = '<option value="">Tutti i Ruoli</option>'; 
-    
-    uniqueRoles.sort().forEach(role => {
-        const option = document.createElement('option');
-        option.value = role;
-        option.textContent = role;
-        filterSelect.appendChild(option);
-    });
+    // La funzione rimane, ma il filtro a tendina non viene popolato perché non hai specificato una colonna per filtrare
+    filterSelect.innerHTML = '<option value="">Tutti</option>'; 
 }
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDataFromSheet();
     searchInput.addEventListener('keyup', filterRaces);
-    filterSelect.addEventListener('change', filterRaces);
+    filterSelect.addEventListener('change', filterRaces); 
 });
+3. 📝 Aggiorna dettaglio.html (Opzionale, ma consigliato)
+Per completezza, puoi aggiungere i dettagli di Città e Regione nella pagina di dettaglio. Modifica il file dettaglio.html su GitHub:
+
+HTML
+
+<div class="container">
+        <a href="index.html" class="back-link">&leftarrow; Torna al Calendario</a>
+        
+        <h1 id="detail-title">Caricamento Gara...</h1>
+        <p class="subtitle" id="detail-date"></p>
+        
+        <div class="detail-box">
+            <h2>📍 Luogo & Dettagli Gara</h2>
+            <p id="detail-luogo"></p>
+            <p id="detail-tipo"></p>
+        </div>
+
+        <div class="detail-box">
+            <h2>🎯 Obiettivo o Risultato Finale</h2>
+            <p id="detail-stato"></p> 
+            <p id="detail-obiettivo"></p>
+        </div>
+        
+4. 📝 Aggiorna detail_script.js (Per mostrare Luogo e PB)
+Infine, modifica il file detail_script.js su GitHub per leggere i nuovi dati:
+
+JavaScript
+
+// ... (codice iniziale, URL)
+
+function renderDetails(race) {
+    document.getElementById('detail-title').textContent = race.Evento;
+    document.getElementById('detail-date').textContent = `${formatDate(race.Data)}`; 
+    
+    // NUOVI CAMPI LUOGO
+    document.getElementById('detail-luogo').innerHTML = `**Luogo:** ${race.Città}, ${race.Regione}`;
+    document.getElementById('detail-tipo').innerHTML = `**Tipo di Gara:** ${race.Tipo} (${race.Distanza})`;
+    
+    // Logica Stato/Obiettivo/Risultato
+    const isPastRace = race.Data && race.Data < new Date().toISOString().split('T')[0];
+    let statoFinale = isPastRace ? (race['Tempo Finale'] ? 'Completata' : 'Ritirata') : 'In Programma';
+    let obiettivoRisultato = isPastRace ? (race['Tempo Finale'] || 'Tempo non registrato') : (race.Obiettivo || 'Obiettivo non definito');
+    
+    // Aggiungi marcatore PB se presente
+    if (isPastRace && race.PB === 'X') { // Assumendo che 'X' sia il marcatore di PB nel foglio
+        obiettivoRisultato += ' ⭐️ (Personal Best)';
+    }
+
+    document.getElementById('detail-stato').innerHTML = `**Stato:** ${statoFinale}`;
+    document.getElementById('detail-obiettivo').innerHTML = `**${isPastRace ? 'Tempo Finale' : 'Obiettivo'}:** ${obiettivoRisultato}`;
+    
+    // ... (Logica SitoWeb e Protocollo Gara invariata)
+}
+// ... (il resto del codice rimane invariato)
