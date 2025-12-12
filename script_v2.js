@@ -150,7 +150,7 @@ HTML
             <p id="detail-obiettivo"></p>
         </div>
         
-4. 📝 Aggiorna detail_script.js (Per mostrare Luogo e PB)
+4. 📝 Aggiorna detail_script_v2.js (Per mostrare Luogo e PB)
 Infine, modifica il file detail_script.js su GitHub per leggere i nuovi dati:
 
 JavaScript
@@ -181,6 +181,7 @@ function renderDetails(race) {
     // ... (Logica SitoWeb e Protocollo Gara invariata)
 }
 // ... (il resto del codice rimane invariato)
+
 
 
 
