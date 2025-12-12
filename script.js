@@ -6,39 +6,31 @@ const searchInput = document.getElementById('searchInput');
 const filterSelect = document.getElementById('filterSelect');
 let raceData = [];
 
-// Funzione per formattare la data da GG-MM-AAAA a GG/MM/AAAA (per la visualizzazione)
-function formatDate(dateString) {
-    if (!dateString) return '';
-    // Sostituisce tutti i trattini con gli slash per la visualizzazione
-    return dateString.replace(/-/g, '/');
-}
-
-// Funzione per convertire GG-MM-AAAA/GG in un oggetto Date UTC (Correzione Finale)
+// Funzione per convertire GG-MM-AAAA/GG in un oggetto Date UTC (Risoluzione Finale)
 function parseDateObject(dateString) {
     // Data di default FUTURA (Anno 2099)
     const FUTURE_DEFAULT = new Date(Date.UTC(2099, 0, 1)); 
 
     if (!dateString || dateString.length < 10) return FUTURE_DEFAULT;
     
-    // **PASSO CRITICO:** Sostituisce slash (/) con trattini (-) per garantire la divisione
-    const cleanedString = dateString.replace(/\//g, '-'); 
+    // Normalizza il separatore (sia / che -)
+    const cleanedString = dateString.replace(/[\/-]/g, '-'); 
     const parts = cleanedString.split('-');
     
     if (parts.length === 3) {
-        // Ordine: GG-MM-AAAA
-        const day = parseInt(parts[0], 10);      // parts[0] = GG
-        const month = parseInt(parts[1], 10) - 1;  // parts[1] = MM (meno 1)
-        const year = parseInt(parts[2], 10);     // parts[2] = AAAA
+        // Leggiamo i componenti dal formato CSV (GG-MM-AAAA)
+        const day = parseInt(parts[0], 10);      
+        const month = parseInt(parts[1], 10) - 1; // Mese è corretto: parts[1] - 1
+        const year = parseInt(parts[2], 10);     
         
         // Se non riusciamo a leggere i numeri, usiamo il fallback futuro
         if (isNaN(year) || isNaN(month) || isNaN(day)) {
             return FUTURE_DEFAULT;
         }
 
-        // Creiamo l'oggetto Data in UTC
+        // Creiamo l'oggetto Data in UTC. L'ordine deve essere (AAAA, MM, GG)
         const dateObj = new Date(Date.UTC(year, month, day));
         
-        // Se la data è "Invalid Date", usiamo il fallback
         if (isNaN(dateObj.getTime())) {
             return FUTURE_DEFAULT;
         }
@@ -191,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
