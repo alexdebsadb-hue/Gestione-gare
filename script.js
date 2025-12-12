@@ -19,6 +19,7 @@ function parseDateForComparison(dateString) {
     const parts = dateString.split('-');
     // Ricostruisce la stringa in formato ISO (AAAA-MM-GG)
     if (parts.length === 3) {
+        // Assicuriamoci che l'ordine sia Anno, Mese, Giorno
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
     return dateString; 
@@ -84,14 +85,16 @@ function filterRaces() {
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-    // LOGICA DI ORDINAMENTO: Dalla data più GRANDE/NUOVA alla più PICCOLA/VECCHIA
-    data.sort((a, b) => {
-        const dateA = parseDateForComparison(a.data);
-        const dateB = parseDateForComparison(b.data);
-        if (dateA < dateB) return 1; // Se A è più piccolo (più vecchio) di B, A viene DOPO (1)
-        if (dateA > dateB) return -1; // Se A è più grande (più nuovo) di B, A viene PRIMA (-1)
-        return 0;
-    }); 
+   // LOGICA DI ORDINAMENTO: Dalla data più GRANDE/NUOVA alla più PICCOLA/VECCHIA
+data.sort((a, b) => {
+    const dateA = parseDateForComparison(a.data);
+    const dateB = parseDateForComparison(b.data);
+    // Se A è più nuovo/grande di B, A viene PRIMA (-1)
+    if (dateA > dateB) return -1; 
+    // Se A è più vecchio/piccolo di B, A viene DOPO (1)
+    if (dateA < dateB) return 1;
+    return 0;
+});
 
     const today = new Date().toISOString().split('T')[0];
     
@@ -163,3 +166,4 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
