@@ -13,20 +13,19 @@ function formatDate(dateString) {
     return dateString.replace(/-/g, '/');
 }
 
-// Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto e l'ordinamento)
-function parseDateForComparison(dateString) {
-    if (!dateString || dateString.length < 10) return "1900-01-01"; 
+// Funzione per convertire GG-MM-AAAA in un oggetto Date di JavaScript (PER ORDINAMENTO E CONFRONTO)
+function parseDateObject(dateString) {
+    if (!dateString || dateString.length < 10) return new Date(0); // Restituisce data molto vecchia (1970) per gestione errori
     const parts = dateString.split('-');
     
     if (parts.length === 3) {
-        // parts[0] è GG
-        // parts[1] è MM
-        // parts[2] è AAAA
-        
-        // La stringa di confronto deve essere AAAA-MM-GG
-        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+        // new Date(anno, mese - 1, giorno). I mesi in JS vanno da 0 a 11.
+        const year = parseInt(parts[2], 10);
+        const month = parseInt(parts[1], 10) - 1; 
+        const day = parseInt(parts[0], 10);
+        return new Date(year, month, day);
     }
-    return dateString; 
+    return new Date(0); 
 }
 
 
@@ -86,33 +85,40 @@ function filterRaces() {
     renderTable(filteredData);
 }
 
+// Nuova funzione renderTable che usa oggetti Date
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-   // NUOVA LOGICA: Ordina per ID Crescente (dal più piccolo al più grande)
-data.sort((a, b) => {
-    // Convertiamo gli ID in numeri per un confronto affidabile
-    const idA = parseInt(a.ID, 10);
-    const idB = parseInt(b.ID, 10);
+    // LOGICA DI ORDINAMENTO: Dalla data più GRANDE/NUOVA alla più PICCOLA/VECCHIA
+    data.sort((a, b) => {
+        const dateA = parseDateObject(a.data);
+        const dateB = parseDateObject(b.data);
+        
+        // Confronto diretto degli oggetti Date
+        if (dateA > dateB) return -1; // A viene PRIMA se è più nuovo
+        if (dateA < dateB) return 1;  // A viene DOPO se è più vecchio
+        return 0;
+    }); 
 
-    // Se idA è più piccolo di idB, A viene PRIMA (-1)
-    if (idA < idB) return -1;
-    // Se idA è più grande di idB, A viene DOPO (1)
-    if (idA > idB) return 1;
-    return 0;
-});
-
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date();
+    // Azzeriamo l'orario di oggi per confronti corretti (solo giorno)
+    today.setHours(0, 0, 0, 0); 
     
     data.forEach(race => {
         const row = tableBody.insertRow();
         
-        // Determina se la gara è passata (necessario per Stato e Risultato)
-        const isPastRace = race.data && parseDateForComparison(race.data) < today; 
+        // Calcola data gara come oggetto Date
+        const raceDateObject = parseDateObject(race.data);
+        
+        // CONFRONTO AFFIDABILE DELLO STATO: Se la data gara è minore o uguale a oggi, la gara è passata.
+        const isPastRace = raceDateObject <= today; 
 
         if (isPastRace) {
             row.classList.add('past-race');
         }
+        
+        // ... (il resto del codice per popolare le 11 colonne rimane invariato, 
+        //       ma ora lo Stato sarà corretto grazie a isPastRace)
         
         // 1. DATA (Formattata GG/MM/AAAA)
         row.insertCell().textContent = formatDate(race.data);
@@ -161,17 +167,18 @@ data.sort((a, b) => {
         }
         
         // 11. STATO
+        // Lo Stato è calcolato in base al confronto affidabile tra oggetti Date
         const stato = isPastRace ? (race.tempoFinale ? 'Completata' : 'Ritirata') : 'In Programma';
         row.insertCell().textContent = stato;
     });
 }
-
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDataFromSheet();
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
