@@ -2,14 +2,15 @@
 // CONFIGURAZIONE
 // =========================================================================
 
-// URL del tuo foglio Google, esportato come CSV. 
-// ASSICURATI CHE L'URL SIA QUELLO CORRETTO DEL TUO FOGLIO, terminante con &output=csv
+// URL del tuo foglio Google, esportato come CSV.
+// *** ASSICURATI CHE QUESTO URL SIA CORRETTO E PUBBLICO ***
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv'; 
 
 // =========================================================================
 // VARIABILI GLOBALI E FUNZIONI UTILITY
 // =========================================================================
 
+// Ottiene i riferimenti agli elementi HTML
 const tableBody = document.getElementById('racesTableBody');
 const searchInput = document.getElementById('searchInput');
 const filterSelect = document.getElementById('filterSelect');
@@ -18,11 +19,10 @@ const tabButtons = document.querySelectorAll('.tab-button');
 let raceData = [];
 let currentStatusFilter = 'Tutti'; // Stato di default per i tab
 
-
 /**
  * Normalizza la data della gara in un oggetto Date UTC (Mezzanotte) per evitare problemi di fuso orario.
  * @param {string} dateString La stringa della data dal CSV (es: "Sab 29 Nov 2025").
- * @returns {Date} L'oggetto Date normalizzato.
+ * @returns {Date} L'oggetto Date normalizzato in UTC.
  */
 function parseDateObject(dateString) {
     if (!dateString) return new Date(0); 
@@ -32,7 +32,7 @@ function parseDateObject(dateString) {
         // Normalizza all'inizio del giorno (00:00:00) in UTC per confronto sicuro
         return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     } catch (e) {
-        console.error("Errore nel parsing della data:", dateString, e);
+        // Se il parsing fallisce, restituisce la data minima
         return new Date(0);
     }
 }
@@ -46,7 +46,6 @@ function formatDate(dateString) {
     const date = parseDateObject(dateString);
     if (date.getTime() === new Date(0).getTime()) return '';
     
-    // Usa toLocaleDateString per la formattazione italiana (formato locale)
     return date.toLocaleDateString('it-IT', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
@@ -81,7 +80,6 @@ function populateFilterSelect(data) {
  * @param {Event} event L'evento di click.
  */
 function filterByStatus(event) {
-    // Ottiene il valore del filtro dal pulsante cliccato (es: "Completata")
     const newStatusFilter = event.target.getAttribute('data-status-filter');
     
     // Aggiorna la variabile globale
@@ -129,7 +127,7 @@ function renderTable(data) {
         const raceDateObject = parseDateObject(race.data);
         const isPastRace = raceDateObject <= todayUTC; 
         const stato = isPastRace 
-            ? (race.tempoFinale ? 'Completata' : 'Ritirata') 
+            ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
             : 'In Programma';
         
         // A. Filtro Ricerca Testuale
@@ -142,7 +140,7 @@ function renderTable(data) {
         // B. Filtro Tipo Gara (Dropdown)
         const typeMatch = typeFilter === 'Tutti' || race.tipo === typeFilter;
         
-        // C. Filtro Stato (Tabs) <--- APPLICA IL FILTRO DELLO STATO QUI!
+        // C. Filtro Stato (Tabs)
         const statusMatch = statusFilter === 'Tutti' || stato === statusFilter; 
 
         return searchMatch && typeMatch && statusMatch;
@@ -153,6 +151,7 @@ function renderTable(data) {
         const dateA = parseDateObject(a.data);
         const dateB = parseDateObject(b.data);
         
+        // Ordine: data più recente/futura in cima (-1)
         if (dateA > dateB) return -1; 
         if (dateA < dateB) return 1;  
         return 0;
@@ -175,13 +174,13 @@ function renderTable(data) {
         
         // Calcolo finale dello STATO
         const stato = isPastRace 
-            ? (race.tempoFinale ? 'Completata' : 'Ritirata') 
+            ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
             : 'In Programma';
         
         // 6. Assegnazione classi CSS per colore
         if (race.tipo) {
             const typeClass = race.tipo.toLowerCase().replace(/\s/g, ''); 
-            // Mappa tipi specifici a classi generali
+            
             if (typeClass.includes('maratona') || typeClass.includes('running')) {
                 row.classList.add('race-running');
             } else if (typeClass.includes('ultra')) {
@@ -191,13 +190,18 @@ function renderTable(data) {
             }
         }
         
-        // Assegna la classe di colore basata sullo stato finale
+        // Assegna la classe di colore basata sullo stato finale (ha la priorità)
         if (stato === 'Ritirata') {
             row.classList.add('status-ritirata');
         } else if (stato === 'Completata') {
             row.classList.add('status-completata');
         }
         
+        // Aggiunge la classe di opacità per le gare passate
+        if (isPastRace) {
+             row.classList.add('past-race');
+        }
+
         // 7. Popolamento delle 11 colonne
         
         // 1. DATA
@@ -231,6 +235,7 @@ function renderTable(data) {
 
         // 9. PB
         const pbCell = row.insertCell();
+        // Controlla se è un PB e se la gara è passata (altrimenti non ha senso)
         pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; 
         pbCell.style.textAlign = 'center';
 
@@ -256,42 +261,44 @@ function renderTable(data) {
  * Carica i dati dal Google Sheet tramite Papa Parse.
  */
 function loadDataFromSheet() {
+    // Tentativo di caricamento sicuro
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
         header: true,
         complete: (results) => {
-            // Ottieni i nomi dei campi reali dal CSV 
+            if (!results.data || results.data.length === 0) {
+                 tableBody.innerHTML = '<tr><td colspan="11" style="color: blue; text-align: center;">Dati caricati, ma il foglio è vuoto.</td></tr>';
+                 return;
+            }
+
             const fields = results.meta.fields || [];
-
-            // Determina la chiave esatta per 'Tempo Finale' gestendo le maiuscole/spazi
-            const tempoFinaleKey = fields.find(f => f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale'));
-
-            // Filtraggio base per eliminare righe vuote o senza data
-            raceData = results.data.filter(row => row.Data && row.Evento);
             
-            // Mappatura e normalizzazione dei dati
-            raceData = raceData.map(row => ({
-                ID: row['ID'] || Date.now() + Math.random(), 
-                data: row['Data'],
-                evento: row['Evento'],
-                // Tipo è derivato da 'Ruolo Strategico' (es: "OBIETTIVO TEMPO" -> "TEMPO")
-                tipo: row['Ruolo Strategico'] ? row['Ruolo Strategico'].split(' ')[0].replace('OBIETTIVO', '').trim() : '', 
-                distanza: row['Distanza'] || '',
-                citta: row['Città'] || '',
-                regione: row['Regione'] || '',
-                obiettivo: row['Pace Target / Obiettivo'] || '',
-                // Usa la chiave trovata per Tempo Finale
-                tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
-                pb: row['PB'] === 'Si',
-                sitoWeb: row['Sito Web'] || '',
-            }));
+            // Trova la chiave esatta per "Tempo Finale" o usa il fallback
+            const tempoFinaleKey = fields.find(f => f && f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale')) || 'Tempo Finale';
+
+            // Filtraggio base e Mappatura
+            raceData = results.data
+                .filter(row => row.Data && row.Evento)
+                .map(row => ({
+                    ID: row['ID'] || Date.now() + Math.random(), 
+                    data: row['Data'],
+                    evento: row['Evento'],
+                    tipo: row['Ruolo Strategico'] ? row['Ruolo Strategico'].split(' ')[0].replace('OBIETTIVO', '').trim() : '', 
+                    distanza: row['Distanza'] || '',
+                    citta: row['Città'] || '',
+                    regione: row['Regione'] || '',
+                    obiettivo: row['Pace Target / Obiettivo'] || '',
+                    tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
+                    pb: row['PB'] === 'Si',
+                    sitoWeb: row['Sito Web'] || '',
+                }));
             
             populateFilterSelect(raceData);
             renderTable(raceData);
         },
         error: (error) => {
             console.error("Errore nel caricamento del CSV:", error);
-            tableBody.innerHTML = '<tr><td colspan="11" style="color: red; text-align: center;">Errore nel caricamento del calendario. Controlla l\'URL del CSV.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="11" style="color: red; text-align: center;">ERRORE: Impossibile caricare il calendario. Controlla l\'URL CSV e la connessione.</td></tr>';
         }
     });
 }
@@ -302,15 +309,18 @@ function loadDataFromSheet() {
 // =========================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Carica e disegna i dati
-    loadDataFromSheet();
-    
-    // 2. Aggiunge listener per i filtri classici
-    searchInput.addEventListener('keyup', filterRaces);
-    filterSelect.addEventListener('change', filterRaces);
-    
-    // 3. Aggiunge listener per i filtri di stato (i tab)
-    tabButtons.forEach(button => {
-        button.addEventListener('click', filterByStatus);
-    });
+    // 1. Carica e disegna i dati (solo se siamo sulla pagina principale che ha l'ID 'racesTableBody')
+    if (tableBody) {
+        loadDataFromSheet();
+        
+        // 2. Aggiunge listener per i filtri classici
+        searchInput.addEventListener('keyup', filterRaces);
+        filterSelect.addEventListener('change', filterRaces);
+        
+        // 3. Aggiunge listener per i filtri di stato (i tab)
+        tabButtons.forEach(button => {
+            button.addEventListener('click', filterByStatus);
+        });
+    }
+    // NOTA: Se avessi una funzione loadRaceDetails, andrebbe qui con un controllo per la pagina dettaglio.
 });
