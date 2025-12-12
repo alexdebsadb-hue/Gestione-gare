@@ -1,119 +1,184 @@
+/* ==================================== */
+/* STILI GENERALI E LAYOUT */
+/* ==================================== */
+
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f4f7f6;
+    background-color: #f4f4f4;
     color: #333;
-    line-height: 1.6;
     margin: 0;
-    padding: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .container {
-    /* Aumentato lo spazio massimo per accogliere più colonne */
-    max-width: 1300px; 
-    margin: 40px auto;
-    padding: 20px;
+    width: 95%;
+    max-width: 1400px;
     background: #fff;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px 30px;
     border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
+    color: #0056b3;
     text-align: center;
-    color: #007bff;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
 }
 
-/* Stili per Controlli e Form */
-.controls {
+/* ==================================== */
+/* STILI FILTRI E RICERCA */
+/* ==================================== */
+
+.filter-controls {
     display: flex;
-    gap: 20px;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    gap: 15px;
 }
 
 #searchInput, #filterSelect {
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 4px;
+    border-radius: 5px;
     font-size: 16px;
-    flex-grow: 1; 
+    flex: 1; /* Permette a entrambi di crescere */
+    min-width: 150px;
 }
 
-#filterSelect {
-    flex-grow: 0;
-    min-width: 120px;
-}
+/* ==================================== */
+/* STILI TAB DI STATO (NOVITÀ) */
+/* ==================================== */
 
-/* Stili per la Tabella */
-#racesTable {
+.tabs-container {
+    display: flex;
+    margin-bottom: 0; /* Rimosso margine inferiore per attaccare alla tabella */
+    border-bottom: 2px solid #ccc; /* Linea sotto i tab */
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    /* Assicura che la tabella non sia compressa orizzontalmente */
-    table-layout: fixed; 
 }
 
-#racesTable th, #racesTable td {
-    padding: 12px 8px; /* Ridotto il padding per salvare spazio */
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-    /* Permette al testo lungo di andare a capo */
-    word-wrap: break-word; 
+.tab-button {
+    padding: 10px 15px;
+    cursor: pointer;
+    border: none;
+    background-color: #e9e9e9;
+    color: #555;
+    outline: none;
+    transition: background-color 0.3s, color 0.3s;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    margin-right: 5px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    border-bottom: none; /* Rimosso bordo inferiore per farlo sembrare parte del contenitore */
 }
 
-#racesTable thead {
-    background-color: #007bff;
-    color: #fff;
-    font-size: 0.9em; /* Testo leggermente più piccolo per le intestazioni */
+.tab-button.active {
+    background-color: #fff;
+    color: #0056b3;
+    /* Bordo che simula l'attaccamento al corpo della tabella */
+    border: 1px solid #ccc;
+    border-bottom: 2px solid #fff; 
+    position: relative;
+    z-index: 10;
 }
 
-#racesTable tbody tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
+/* ==================================== */
+/* STILI TABELLA E RIGHE */
+/* ==================================== */
 
-#racesTable tbody tr:hover {
-    background-color: #e6f7ff;
-}
-
-/* Stile per evidenziare le gare passate */
-.past-race {
-    color: #888;
-    font-style: italic;
-    background-color: #f0f0f0;
-}
-
-/* Stile per la cella PB con la stella */
-td:nth-child(5) { 
-    font-size: 1.2em;
-    font-weight: bold;
-    color: gold; 
-}
-
-
-/* Stili per la pagina Dettaglio */
-.back-link {
-    display: inline-block;
-    margin-bottom: 20px;
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.detail-box {
-    background-color: #f9f9f9;
-    padding: 15px;
-    margin-top: 20px;
-    border-left: 5px solid #007bff;
-    border-radius: 4px;
-}
-
-.detail-box h2 {
-    color: #007bff;
+.table-container {
+    overflow-x: auto; /* Per tabelle grandi su schermi piccoli */
+    width: 100%;
     margin-top: 0;
 }
 
-.subtitle {
-    font-size: 1.2em;
-    color: #555;
-    text-align: center;
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+    font-size: 0.9em;
+    min-width: 1000px; /* Assicura che la tabella sia leggibile */
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+}
+
+.styled-table thead tr {
+    background-color: #009879;
+    color: #ffffff;
+    text-align: left;
+    font-weight: bold;
+}
+
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    border: 1px solid #dddddd;
+}
+
+.styled-table tbody tr {
+    border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+}
+
+/* Riga al passaggio del mouse */
+.styled-table tbody tr:hover {
+    background-color: #f0f8ff;
+    color: #000;
+}
+
+.styled-table tbody tr:last-of-type {
+    border-bottom: 2px solid #009879;
+}
+
+/* Stili specifici per link */
+.styled-table a {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+.styled-table a:hover {
+    text-decoration: underline;
+}
+
+/* ==================================== */
+/* CLASSI DI COLORE (NOVITÀ) */
+/* ==================================== */
+
+/* Colori per TIPO di Gara */
+.race-maratona, .race-running {
+    background-color: #e0f7fa; /* Azzurro chiaro */
+}
+
+.race-ultra {
+    background-color: #fff3e0; /* Arancio chiaro/crema */
+}
+
+.race-triathlon, .race-ironman {
+    background-color: #fce4ec; /* Rosa chiaro */
+}
+
+/* Colore se la gara è passata (in generale) */
+.past-race {
+    opacity: 0.8;
+}
+
+/* Colore se la gara è "Ritirata" */
+.status-ritirata {
+    background-color: #ffcdd2 !important; /* Rosso molto chiaro, !important per sovrascrivere il colore del tipo */
+    font-style: italic;
+    font-weight: bold;
+    color: #d32f2f;
+}
+
+/* Colore se la gara è "Completata" */
+.status-completata {
+    background-color: #c8e6c9 !important; /* Verde chiaro */
+    font-weight: bold;
+    color: #388e3c;
 }
