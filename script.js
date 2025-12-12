@@ -15,18 +15,27 @@ function formatDate(dateString) {
 
 // Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (PER ORDINAMENTO E CONFRONTO AFFIDABILE)
 function parseDateObject(dateString) {
-    if (!dateString || dateString.length < 10) return new Date(0); // Data di default molto vecchia (Epoch)
+    // Data di default FUTURA (Anno 2099) per garantire che lo stato sia 'In Programma' 
+    // se la data non è leggibile (o vuota).
+    const FUTURE_DEFAULT = new Date(Date.UTC(2099, 0, 1)); 
+
+    if (!dateString || dateString.length < 10) return FUTURE_DEFAULT; // <-- CAMBIATO QUI
     const parts = dateString.split('-');
     
     if (parts.length === 3) {
         const year = parseInt(parts[2], 10);
-        const month = parseInt(parts[1], 10) - 1; // I mesi in JS vanno da 0 (Gennaio) a 11 (Dicembre)
+        const month = parseInt(parts[1], 10) - 1; 
         const day = parseInt(parts[0], 10);
         
+        // Verifica se i valori sono validi (es. non NaN)
+        if (isNaN(year) || isNaN(month) || isNaN(day)) {
+             return FUTURE_DEFAULT; // <-- CAMBIATO ANCHE QUI
+        }
+
         // Crea un oggetto Date basato sull'UTC per evitare problemi di fuso orario
         return new Date(Date.UTC(year, month, day));
     }
-    return new Date(0); 
+    return FUTURE_DEFAULT; // <-- CAMBIATO ANCHE QUI
 }
 
 
@@ -176,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
