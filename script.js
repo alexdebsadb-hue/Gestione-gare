@@ -1,4 +1,12 @@
-// Contenuto Completo per script.js (o script_final.js)
+Certamente! Hai ragione, copiare lo script completo è il modo più sicuro per evitare qualsiasi errore di sintassi introdotto durante le modifiche e per risolvere definitivamente il problema di ordinamento della data.
+
+Ecco lo script completo e definitivo per il tuo file script.js (o script_final.js), che include la correzione per il formato data GG-MM-AAAA e la logica di ordinamento più robusta.
+
+Istruzioni: Per favore, sostituisci tutto il contenuto del tuo file JavaScript principale su GitHub con questo blocco.
+
+JavaScript
+
+// Contenuto Completo e Definitivo per script.js (o script_final.js)
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv'; 
 
 const tableBody = document.getElementById('racesTableBody');
@@ -9,13 +17,13 @@ let raceData = [];
 // Funzione per formattare la data da GG-MM-AAAA a GG/MM/AAAA (per la visualizzazione)
 function formatDate(dateString) {
     if (!dateString) return '';
-    // Sostituisce tutti i trattini con gli slash
+    // Sostituisce tutti i trattini con gli slash per la visualizzazione
     return dateString.replace(/-/g, '/');
 }
 
-// Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto)
+// Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto e l'ordinamento)
 function parseDateForComparison(dateString) {
-    if (!dateString || dateString.length < 10) return "1900-01-01"; // Data molto passata per sicurezza
+    if (!dateString || dateString.length < 10) return "1900-01-01"; 
     const parts = dateString.split('-');
     // Ricostruisce la stringa in formato ISO (AAAA-MM-GG)
     if (parts.length === 3) {
@@ -31,7 +39,7 @@ function loadDataFromSheet() {
         header: true,
         skipEmptyLines: true,
         complete: function(results) {
-            // Mappatura AGGIORNATA per i nomi SENZA SPAZI E ACCENTI
+            // Mappatura che usa i nomi delle colonne senza spazi e senza accenti
             raceData = results.data.map(row => ({
                 ID: row.ID, 
                 data: row.Data,
@@ -83,11 +91,11 @@ function filterRaces() {
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-    // NUOVA LOGICA DI ORDINAMENTO: Ordinamento basato sulla stringa ISO (AAAA-MM-GG)
+    // LOGICA DI ORDINAMENTO AFFIDABILE (basata sulla stringa ISO)
     data.sort((a, b) => {
         const dateA = parseDateForComparison(a.data);
         const dateB = parseDateForComparison(b.data);
-        if (dateA < dateB) return -1;
+        if (dateA < dateB) return -1; // Ordina le date più vecchie prima (dal passato al futuro)
         if (dateA > dateB) return 1;
         return 0;
     }); 
@@ -98,13 +106,13 @@ function renderTable(data) {
         const row = tableBody.insertRow();
         
         // USO DELLA FUNZIONE parseDateForComparison per la verifica dello stato!
-        const isPastRace = race.data && parseDateForcomparison(race.data) < today; 
+        const isPastRace = race.data && parseDateForComparison(race.data) < today; 
 
         if (isPastRace) {
             row.classList.add('past-race');
         }
         
-        // USO DELLA FUNZIONE formatDate per la visualizzazione
+        // Visualizzazione della data (GG/MM/AAAA)
         row.insertCell().textContent = formatDate(race.data);
         
         const eventCell = row.insertCell();
@@ -127,19 +135,18 @@ function renderTable(data) {
         pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; 
         pbCell.style.textAlign = 'center';
         
-        // Logica dello Stato
+        // Logica dello Stato: Completata solo se passata E TempoFinale NON è vuoto
         const stato = isPastRace ? (race.tempoFinale ? 'Completata' : 'Ritirata') : 'In Programma';
         row.insertCell().textContent = stato;
     });
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDataFromSheet();
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
-
-
 
 
 
