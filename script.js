@@ -100,6 +100,8 @@ function filterByStatus(event) {
 }
 
 
+// ... (Tutto il codice precedente rimane uguale) ...
+
 /**
  * Funzione principale per disegnare la tabella applicando tutti i filtri e l'ordinamento.
  * @param {Array<Object>} data I dati completi delle gare.
@@ -110,16 +112,16 @@ function renderTable(data) {
     // 1. Ottieni i valori attuali dei filtri
     const searchTerm = searchInput.value.toLowerCase().trim();
     const typeFilter = filterSelect.value;
-    const statusFilter = currentStatusFilter;
+    const statusFilter = currentStatusFilter; // Ottenuto dalla variabile globale aggiornata da filterByStatus
 
     // 2. Normalizza 'oggi' in UTC per confronto (solo data, ore 00:00:00)
     const now = new Date();
     const dateString = now.toISOString().split('T')[0]; 
     const todayUTC = new Date(dateString); 
     
-    // 3. Filtra i dati
+    // 3. Filtra i dati in base a TUTTI i criteri (Ricerca, Tipo, STATO)
     let filteredData = data.filter(race => {
-        // Calcola lo stato per il filtro
+        // Calcola lo stato della gara (necessario per il filtro dello Stato)
         const raceDateObject = parseDateObject(race.data);
         const isPastRace = raceDateObject <= todayUTC; 
         const stato = isPastRace 
@@ -136,7 +138,7 @@ function renderTable(data) {
         // B. Filtro Tipo Gara (Dropdown)
         const typeMatch = typeFilter === 'Tutti' || race.tipo === typeFilter;
         
-        // C. Filtro Stato (Tabs)
+        // C. Filtro Stato (Tabs) <--- QUESTO È IL FILTRO STATO!
         const statusMatch = statusFilter === 'Tutti' || stato === statusFilter;
 
         return searchMatch && typeMatch && statusMatch;
@@ -147,7 +149,6 @@ function renderTable(data) {
         const dateA = parseDateObject(a.data);
         const dateB = parseDateObject(b.data);
         
-        // Confronto standard: date future/più recenti vengono prima
         if (dateA > dateB) return -1; 
         if (dateA < dateB) return 1;  
         return 0;
@@ -163,6 +164,8 @@ function renderTable(data) {
     }
 
     filteredData.forEach(race => {
+        // ... (Il resto della logica di creazione righe e celle è corretto) ...
+        
         const row = tableBody.insertRow(); 
 
         const raceDateObject = parseDateObject(race.data);
@@ -175,9 +178,7 @@ function renderTable(data) {
         
         // Aggiunge la classe di colore per il TIPO di gara (es: race-ultra)
         if (race.tipo) {
-            // Normalizza in minuscolo e rimuove spazi per la classe CSS
             const typeClass = race.tipo.toLowerCase().replace(/\s/g, ''); 
-            // Usa una mappatura semplificata per classi CSS
             if (typeClass.includes('maratona') || typeClass.includes('running')) {
                 row.classList.add('race-running');
             } else if (typeClass.includes('ultra')) {
@@ -255,10 +256,13 @@ function renderTable(data) {
 
 /**
  * Funzione per gestire la ricerca testuale o il filtro per tipo.
+ * (Ora chiama semplicemente renderTable per riapplicare tutti i filtri)
  */
 function filterRaces() {
     renderTable(raceData);
 }
+
+// ... (Il resto del codice da qui in poi rimane invariato, inclusa l'inizializzazione) ...
 
 
 /**
@@ -314,3 +318,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Aggiunge listener per i NUOVI filtri di stato (i tab)
     tabButtons.forEach(button => {
         button.addEventListener('click', filterBy
+
