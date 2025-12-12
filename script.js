@@ -13,17 +13,18 @@ function formatDate(dateString) {
     return dateString.replace(/-/g, '/');
 }
 
-// Funzione per convertire GG-MM-AAAA in un oggetto Date di JavaScript (PER ORDINAMENTO E CONFRONTO)
+// Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (PER ORDINAMENTO E CONFRONTO AFFIDABILE)
 function parseDateObject(dateString) {
-    if (!dateString || dateString.length < 10) return new Date(0); // Restituisce data molto vecchia (1970) per gestione errori
+    if (!dateString || dateString.length < 10) return new Date(0); // Data di default molto vecchia (Epoch)
     const parts = dateString.split('-');
     
     if (parts.length === 3) {
-        // new Date(anno, mese - 1, giorno). I mesi in JS vanno da 0 a 11.
         const year = parseInt(parts[2], 10);
-        const month = parseInt(parts[1], 10) - 1; 
+        const month = parseInt(parts[1], 10) - 1; // I mesi in JS vanno da 0 (Gennaio) a 11 (Dicembre)
         const day = parseInt(parts[0], 10);
-        return new Date(year, month, day);
+        
+        // Crea un oggetto Date basato sull'UTC per evitare problemi di fuso orario
+        return new Date(Date.UTC(year, month, day));
     }
     return new Date(0); 
 }
@@ -85,40 +86,37 @@ function filterRaces() {
     renderTable(filteredData);
 }
 
-// Nuova funzione renderTable che usa oggetti Date
+// All'inizio della funzione renderTable (o dove è definita)
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-    // LOGICA DI ORDINAMENTO: Dalla data più GRANDE/NUOVA alla più PICCOLA/VECCHIA
+    // LOGICA DI ORDINAMENTO (già corretta, non toccare)
     data.sort((a, b) => {
         const dateA = parseDateObject(a.data);
         const dateB = parseDateObject(b.data);
         
-        // Confronto diretto degli oggetti Date
-        if (dateA > dateB) return -1; // A viene PRIMA se è più nuovo
-        if (dateA < dateB) return 1;  // A viene DOPO se è più vecchio
+        if (dateA > dateB) return -1; 
+        if (dateA < dateB) return 1;  
         return 0;
     }); 
 
-    const today = new Date();
-    // Azzeriamo l'orario di oggi per confronti corretti (solo giorno)
-    today.setHours(0, 0, 0, 0); 
+    // NUOVO OGGETTO TODAY: Creato in UTC per un confronto preciso
+    const now = new Date();
+    // Crea un oggetto Date che rappresenta la mezzanotte di oggi in UTC
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     
     data.forEach(race => {
         const row = tableBody.insertRow();
         
-        // Calcola data gara come oggetto Date
+        // Calcola data gara come oggetto Date in UTC
         const raceDateObject = parseDateObject(race.data);
         
-        // CONFRONTO AFFIDABILE DELLO STATO: Se la data gara è minore o uguale a oggi, la gara è passata.
-        const isPastRace = raceDateObject <= today; 
-
-        if (isPastRace) {
-            row.classList.add('past-race');
-        }
+        // CONFRONTO AFFIDABILE: Data Gara <= Oggi (entrambi in UTC)
+        const isPastRace = raceDateObject <= todayUTC; 
         
-        // ... (il resto del codice per popolare le 11 colonne rimane invariato, 
-        //       ma ora lo Stato sarà corretto grazie a isPastRace)
+        // ... (il resto del codice che popola le righe rimane invariato)
+        
+        // ...
         
         // 1. DATA (Formattata GG/MM/AAAA)
         row.insertCell().textContent = formatDate(race.data);
@@ -178,6 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
