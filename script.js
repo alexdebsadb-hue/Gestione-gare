@@ -17,9 +17,13 @@ function formatDate(dateString) {
 function parseDateForComparison(dateString) {
     if (!dateString || dateString.length < 10) return "1900-01-01"; 
     const parts = dateString.split('-');
-    // Ricostruisce la stringa in formato ISO (AAAA-MM-GG)
+    
     if (parts.length === 3) {
-        // Assicuriamoci che l'ordine sia Anno, Mese, Giorno
+        // parts[0] è GG
+        // parts[1] è MM
+        // parts[2] è AAAA
+        
+        // La stringa di confronto deve essere AAAA-MM-GG
         return `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
     return dateString; 
@@ -89,10 +93,8 @@ function renderTable(data) {
 data.sort((a, b) => {
     const dateA = parseDateForComparison(a.data);
     const dateB = parseDateForComparison(b.data);
-    // Se A è più nuovo/grande di B, A viene PRIMA (-1)
-    if (dateA > dateB) return -1; 
-    // Se A è più vecchio/piccolo di B, A viene DOPO (1)
-    if (dateA < dateB) return 1;
+    if (dateA > dateB) return -1; // A viene prima se è più nuovo
+    if (dateA < dateB) return 1;  // A viene dopo se è più vecchio
     return 0;
 });
 
@@ -166,4 +168,5 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
