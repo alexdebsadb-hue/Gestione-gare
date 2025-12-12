@@ -1,4 +1,4 @@
-// Contenuto Completo per script.js
+// Contenuto Completo per script.js (o script_final.js)
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv'; 
 
 const tableBody = document.getElementById('racesTableBody');
@@ -6,12 +6,29 @@ const searchInput = document.getElementById('searchInput');
 const filterSelect = document.getElementById('filterSelect');
 let raceData = [];
 
-// Funzione per formattare la data da AAAA-MM-GG a GG/MM/AAAA
+// Funzione per formattare la data da GG-MM-AAAA a GG/MM/AAAA (per la visualizzazione)
 function formatDate(dateString) {
     if (!dateString || dateString.length < 10) return dateString;
-    const [year, month, day] = dateString.split('-');
-    return `${day}/${month}/${year}`;
+    // La data è attesa in formato GG-MM-AAAA (es. 14-12-2025)
+    const parts = dateString.split('-');
+    // Restituiamo in formato GG/MM/AAAA (es. 14/12/2025)
+    if (parts.length === 3) {
+        return `${parts[0]}/${parts[1]}/${parts[2]}`;
+    }
+    return dateString;
 }
+
+// Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto)
+function parseDateForComparison(dateString) {
+    if (!dateString || dateString.length < 10) return "1900-01-01"; // Data molto passata per sicurezza
+    const parts = dateString.split('-');
+    // Ricostruisce la stringa in formato ISO (AAAA-MM-GG)
+    if (parts.length === 3) {
+        return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateString; 
+}
+
 
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -29,7 +46,7 @@ function loadDataFromSheet() {
                 citta: row.Citta,
                 regione: row.Regione,
                 obiettivo: row.Obiettivo,
-                tempoFinale: row.TempoFinale || '', // TempoFinale tutto attaccato
+                tempoFinale: row.TempoFinale || '', 
                 pb: row.PB || '', 
                 sitoWeb: row.SitoWeb || ''
             }));
@@ -39,7 +56,6 @@ function loadDataFromSheet() {
         },
         error: function(error) {
             console.error("Errore nel caricamento del foglio di calcolo:", error);
-            // Messaggio di errore visibile se Papa Parse fallisce
             tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">ERRORE: Impossibile caricare i dati. Verifica l\'URL CSV e i nomi delle colonne.</td></tr>';
         }
     });
@@ -71,13 +87,14 @@ function filterRaces() {
 
 function renderTable(data) {
     tableBody.innerHTML = '';
-    // Ordina per data (il più vicino in alto)
-    data.sort((a, b) => new Date(a.data) - new Date(b.data)); 
+    data.sort((a, b) => new Date(parseDateForComparison(a.data)) - new Date(parseDateForComparison(b.data))); 
     const today = new Date().toISOString().split('T')[0];
     
     data.forEach(race => {
         const row = tableBody.insertRow();
-        const isPastRace = race.data && race.data < today;
+        
+        // USO DELLA NUOVA FUNZIONE parseDateForComparison per la verifica dello stato!
+        const isPastRace = race.data && parseDateForComparison(race.data) < today; 
 
         if (isPastRace) {
             row.classList.add('past-race');
@@ -91,7 +108,6 @@ function renderTable(data) {
         eventLink.textContent = `${race.evento} (${race.tipo} ${race.distanza})`; 
         eventCell.appendChild(eventLink);
         
-        // Uso Citta senza accento
         row.insertCell().textContent = `${race.citta} (${race.regione})`;
 
         let risultato = '';
@@ -106,6 +122,7 @@ function renderTable(data) {
         pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; 
         pbCell.style.textAlign = 'center';
         
+        // Logica dello Stato
         const stato = isPastRace ? (race.tempoFinale ? 'Completata' : 'Ritirata') : 'In Programma';
         row.insertCell().textContent = stato;
     });
@@ -114,11 +131,9 @@ function renderTable(data) {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDataFromSheet();
-    // I listener ora chiamano le funzioni che abbiamo definito sopra
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
-
 
 
 
