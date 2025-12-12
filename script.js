@@ -13,7 +13,7 @@ function formatDate(dateString) {
     return dateString.replace(/-/g, '/');
 }
 
-// Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (PER ORDINAMENTO E CONFRONTO AFFIDABILE)
+// Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (Correzione Finale)
 function parseDateObject(dateString) {
     // Data di default FUTURA (Anno 2099)
     const FUTURE_DEFAULT = new Date(Date.UTC(2099, 0, 1)); 
@@ -26,25 +26,23 @@ function parseDateObject(dateString) {
         const month = parseInt(parts[1], 10) - 1; 
         const day = parseInt(parts[0], 10);
         
-        // Verifica se i valori numerici sono validi
-        if (isNaN(year) || isNaN(month) || isNaN(day) || year < 2000) {
+        // Se non riusciamo a leggere i numeri, usiamo il fallback futuro
+        if (isNaN(year) || isNaN(month) || isNaN(day)) {
             return FUTURE_DEFAULT;
         }
 
-        // Crea l'oggetto Data in UTC
+        // Creiamo l'oggetto Data in UTC
         const dateObj = new Date(Date.UTC(year, month, day));
-
-        // CONTROLLO CRITICO: Verifica se l'oggetto data è un 'Invalid Date'.
-        // Se non è valido, significa che i numeri (es. 31 Febbraio) non funzionano.
+        
+        // Se la data è "Invalid Date" (es. 31 Febbraio), usiamo il fallback
         if (isNaN(dateObj.getTime())) {
             return FUTURE_DEFAULT;
         }
         
         return dateObj;
     }
-    return FUTURE_DEFAULT; 
+    return FUTURE_DEFAULT; // Fallback se la stringa non è nel formato GG-MM-AAAA
 }
-
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
@@ -189,6 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
