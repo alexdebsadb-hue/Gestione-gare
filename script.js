@@ -2,11 +2,9 @@
 // CONFIGURAZIONE
 // =========================================================================
 
-// URL del tuo foglio Google, esportato come CSV.
-// Questo URL è un placeholder. Assicurati di usare l'URL di esportazione CSV corretto.
-// Se l'ID è '1c7Q_gJ5K-Y4P3dJ7F9rV7aY7sX5zY6c4b2aW3e1dZ0', l'URL corretto dovrebbe essere:
-const sheetUrl = "https://docs.google.com/spreadsheets/d/1c7Q_gJ5K-Y4P3dJ7F9rV7aY7sX5zY6c4b2aW3e1dZ0/gviz/tq?tqx=out:csv&sheet=Foglio1";
-
+// URL del tuo foglio Google, esportato come CSV. 
+// ASSICURATI CHE L'URL SIA QUELLO CORRETTO DEL TUO FOGLIO, terminante con &output=csv
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv'; 
 
 // =========================================================================
 // VARIABILI GLOBALI E FUNZIONI UTILITY
@@ -18,18 +16,17 @@ const filterSelect = document.getElementById('filterSelect');
 const tabButtons = document.querySelectorAll('.tab-button');
 
 let raceData = [];
-let currentStatusFilter = 'Tutti'; // Stato di default, si collega ai tab
+let currentStatusFilter = 'Tutti'; // Stato di default per i tab
+
 
 /**
- * Normalizza la data della gara in un oggetto Date UTC per evitare problemi di fuso orario.
+ * Normalizza la data della gara in un oggetto Date UTC (Mezzanotte) per evitare problemi di fuso orario.
  * @param {string} dateString La stringa della data dal CSV (es: "Sab 29 Nov 2025").
  * @returns {Date} L'oggetto Date normalizzato.
  */
 function parseDateObject(dateString) {
-    if (!dateString) return new Date(0); // Data minima se mancante
+    if (!dateString) return new Date(0); 
     
-    // PapaParse dovrebbe gestire la conversione, ma la normalizziamo a mezzanotte UTC
-    // per garantire coerenza con il confronto "todayUTC"
     try {
         const date = new Date(dateString);
         // Normalizza all'inizio del giorno (00:00:00) in UTC per confronto sicuro
@@ -60,7 +57,6 @@ function formatDate(dateString) {
 
 /**
  * Popola il dropdown del filtro Tipo con tutti i valori unici.
- * @param {Array<Object>} data I dati completi delle gare.
  */
 function populateFilterSelect(data) {
     const types = new Set();
@@ -81,26 +77,34 @@ function populateFilterSelect(data) {
 
 /**
  * Gestisce il click sui tab di Stato.
+ * Aggiorna la variabile globale e ridisegna la tabella.
  * @param {Event} event L'evento di click.
  */
 function filterByStatus(event) {
+    // Ottiene il valore del filtro dal pulsante cliccato (es: "Completata")
     const newStatusFilter = event.target.getAttribute('data-status-filter');
     
     // Aggiorna la variabile globale
     currentStatusFilter = newStatusFilter;
 
-    // Rimuovi la classe 'active' da tutti i pulsanti e aggiungila al pulsante cliccato
+    // Aggiorna l'aspetto dei pulsanti
     tabButtons.forEach(button => {
         button.classList.remove('active');
     });
     event.target.classList.add('active');
 
-    // Rirenderizza la tabella con il nuovo filtro
+    // Rirenderizza la tabella, applicando il filtro aggiornato
     renderTable(raceData);
 }
 
+/**
+ * Funzione per gestire la ricerca testuale o il filtro per tipo.
+ * Chiama renderTable per riapplicare TUTTI i filtri, incluso lo stato.
+ */
+function filterRaces() {
+    renderTable(raceData);
+}
 
-// ... (Tutto il codice precedente rimane uguale) ...
 
 /**
  * Funzione principale per disegnare la tabella applicando tutti i filtri e l'ordinamento.
@@ -112,7 +116,7 @@ function renderTable(data) {
     // 1. Ottieni i valori attuali dei filtri
     const searchTerm = searchInput.value.toLowerCase().trim();
     const typeFilter = filterSelect.value;
-    const statusFilter = currentStatusFilter; // Ottenuto dalla variabile globale aggiornata da filterByStatus
+    const statusFilter = currentStatusFilter; // Legge il valore aggiornato dal tab
 
     // 2. Normalizza 'oggi' in UTC per confronto (solo data, ore 00:00:00)
     const now = new Date();
@@ -138,8 +142,8 @@ function renderTable(data) {
         // B. Filtro Tipo Gara (Dropdown)
         const typeMatch = typeFilter === 'Tutti' || race.tipo === typeFilter;
         
-        // C. Filtro Stato (Tabs) <--- QUESTO È IL FILTRO STATO!
-        const statusMatch = statusFilter === 'Tutti' || stato === statusFilter;
+        // C. Filtro Stato (Tabs) <--- APPLICA IL FILTRO DELLO STATO QUI!
+        const statusMatch = statusFilter === 'Tutti' || stato === statusFilter; 
 
         return searchMatch && typeMatch && statusMatch;
     });
@@ -164,8 +168,6 @@ function renderTable(data) {
     }
 
     filteredData.forEach(race => {
-        // ... (Il resto della logica di creazione righe e celle è corretto) ...
-        
         const row = tableBody.insertRow(); 
 
         const raceDateObject = parseDateObject(race.data);
@@ -176,36 +178,32 @@ function renderTable(data) {
             ? (race.tempoFinale ? 'Completata' : 'Ritirata') 
             : 'In Programma';
         
-        // Aggiunge la classe di colore per il TIPO di gara (es: race-ultra)
+        // 6. Assegnazione classi CSS per colore
         if (race.tipo) {
             const typeClass = race.tipo.toLowerCase().replace(/\s/g, ''); 
+            // Mappa tipi specifici a classi generali
             if (typeClass.includes('maratona') || typeClass.includes('running')) {
                 row.classList.add('race-running');
             } else if (typeClass.includes('ultra')) {
                 row.classList.add('race-ultra');
             } else if (typeClass.includes('triathlon') || typeClass.includes('ironman')) {
                 row.classList.add('race-triathlon');
-            } else {
-                 row.classList.add(`race-${typeClass}`);
             }
         }
         
-        // Aggiunge la classe di colore per lo STATO della gara
+        // Assegna la classe di colore basata sullo stato finale
         if (stato === 'Ritirata') {
             row.classList.add('status-ritirata');
         } else if (stato === 'Completata') {
             row.classList.add('status-completata');
         }
         
-        // Aggiunge la classe per le gare passate (per opacità generale)
-        if (isPastRace) {
-            row.classList.add('past-race');
-        }
+        // 7. Popolamento delle 11 colonne
         
-        // 1. DATA (Formattata)
+        // 1. DATA
         row.insertCell().textContent = formatDate(race.data);
         
-        // 2. EVENTO (Con Link a dettaglio.html, se implementato)
+        // 2. EVENTO (Con Link a dettaglio.html)
         const eventCell = row.insertCell();
         const eventLink = document.createElement('a');
         eventLink.href = `dettaglio.html?id=${race.ID}`; 
@@ -227,16 +225,16 @@ function renderTable(data) {
         // 7. OBIETTIVO
         row.insertCell().textContent = race.obiettivo || '';
 
-        // 8. RISULTATO (TempoFinale) - Mostra solo se gara Completata
+        // 8. RISULTATO
         const resultCell = row.insertCell();
         resultCell.textContent = (stato === 'Completata' && race.tempoFinale) ? race.tempoFinale : '';
 
-        // 9. PB (Personal Best)
+        // 9. PB
         const pbCell = row.insertCell();
         pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; 
         pbCell.style.textAlign = 'center';
 
-        // 10. SITO WEB (Come Link Cliccabile)
+        // 10. SITO WEB
         const webCell = row.insertCell();
         if (race.sitoWeb) {
             const webLink = document.createElement('a');
@@ -248,48 +246,44 @@ function renderTable(data) {
             webCell.textContent = '';
         }
         
-        // 11. STATO (la colonna che indica lo stato)
+        // 11. STATO
         row.insertCell().textContent = stato;
     });
 }
 
 
 /**
- * Funzione per gestire la ricerca testuale o il filtro per tipo.
- * (Ora chiama semplicemente renderTable per riapplicare tutti i filtri)
- */
-function filterRaces() {
-    renderTable(raceData);
-}
-
-// ... (Il resto del codice da qui in poi rimane invariato, inclusa l'inizializzazione) ...
-
-
-/**
  * Carica i dati dal Google Sheet tramite Papa Parse.
  */
 function loadDataFromSheet() {
-    Papa.parse(sheetUrl, {
+    Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
         header: true,
         complete: (results) => {
+            // Ottieni i nomi dei campi reali dal CSV 
+            const fields = results.meta.fields || [];
+
+            // Determina la chiave esatta per 'Tempo Finale' gestendo le maiuscole/spazi
+            const tempoFinaleKey = fields.find(f => f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale'));
+
             // Filtraggio base per eliminare righe vuote o senza data
             raceData = results.data.filter(row => row.Data && row.Evento);
             
-            // Mappatura dei nomi delle colonne per coerenza (es. 'Data' -> 'data')
+            // Mappatura e normalizzazione dei dati
             raceData = raceData.map(row => ({
-                ID: row['ID'] || Date.now() + Math.random(), // Aggiungi un ID se manca
+                ID: row['ID'] || Date.now() + Math.random(), 
                 data: row['Data'],
                 evento: row['Evento'],
-                tipo: row['Ruolo Strategico'] ? row['Ruolo Strategico'].split(' ')[0].replace('OBIETTIVO', '').trim() : row['Ruolo Strategico'],
+                // Tipo è derivato da 'Ruolo Strategico' (es: "OBIETTIVO TEMPO" -> "TEMPO")
+                tipo: row['Ruolo Strategico'] ? row['Ruolo Strategico'].split(' ')[0].replace('OBIETTIVO', '').trim() : '', 
                 distanza: row['Distanza'] || '',
                 citta: row['Città'] || '',
                 regione: row['Regione'] || '',
                 obiettivo: row['Pace Target / Obiettivo'] || '',
-                tempoFinale: row['Tempo Finale'] || '', // Nuovo campo da CSV
+                // Usa la chiave trovata per Tempo Finale
+                tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
                 pb: row['PB'] === 'Si',
                 sitoWeb: row['Sito Web'] || '',
-                // Aggiungi qui altre colonne se necessario
             }));
             
             populateFilterSelect(raceData);
@@ -315,7 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces);
     
-    // 3. Aggiunge listener per i NUOVI filtri di stato (i tab)
+    // 3. Aggiunge listener per i filtri di stato (i tab)
     tabButtons.forEach(button => {
-        button.addEventListener('click', filterBy
-
+        button.addEventListener('click', filterByStatus);
+    });
+});
