@@ -95,33 +95,31 @@ function filterRaces() {
     renderTable(filteredData);
 }
 
-// All'inizio della funzione renderTable (o dove è definita)
+// All'inizio della funzione renderTable
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-    // LOGICA DI ORDINAMENTO (già corretta, non toccare)
+    // LOGICA DI ORDINAMENTO (lasciala così, ora funzionerà con la correzione del parse)
     data.sort((a, b) => {
         const dateA = parseDateObject(a.data);
         const dateB = parseDateObject(b.data);
         
-        if (dateA > dateB) return -1; 
+        if (dateA > dateB) return -1;  
         if (dateA < dateB) return 1;  
         return 0;
     }); 
 
-    // NUOVO OGGETTO TODAY: Creato in UTC per un confronto preciso
- const now = new Date();
-const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+    // NUOVO OGGETTO TODAY: Creato in modo sicuro in UTC (dalla stringa AAAA-MM-GG)
+    const now = new Date();
+    const dateString = now.toISOString().split('T')[0]; // Es: "2025-12-12"
+    const todayUTC = new Date(dateString); // Crea l'oggetto Date in UTC
+    
     data.forEach(race => {
-        const row = tableBody.insertRow();
-        
-        // Calcola data gara come oggetto Date in UTC
+        // ...
         const raceDateObject = parseDateObject(race.data);
         
-        // CONFRONTO AFFIDABILE: Data Gara <= Oggi (entrambi in UTC)
+        // CONFRONTO AFFIDABILE: Data Gara <= Oggi
         const isPastRace = raceDateObject <= todayUTC; 
-        
-        // ... (il resto del codice che popola le righe rimane invariato)
         
         // ...
         
@@ -183,6 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
