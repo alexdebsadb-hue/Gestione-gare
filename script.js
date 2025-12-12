@@ -110,10 +110,8 @@ function renderTable(data) {
     }); 
 
     // NUOVO OGGETTO TODAY: Creato in UTC per un confronto preciso
-    const now = new Date();
-    // Crea un oggetto Date che rappresenta la mezzanotte di oggi in UTC
-    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
-    
+ const now = new Date();
+const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     data.forEach(race => {
         const row = tableBody.insertRow();
         
@@ -185,6 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
