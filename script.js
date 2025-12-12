@@ -1,11 +1,3 @@
-Certamente! Hai ragione, copiare lo script completo è il modo più sicuro per evitare qualsiasi errore di sintassi introdotto durante le modifiche e per risolvere definitivamente il problema di ordinamento della data.
-
-Ecco lo script completo e definitivo per il tuo file script.js (o script_final.js), che include la correzione per il formato data GG-MM-AAAA e la logica di ordinamento più robusta.
-
-Istruzioni: Per favore, sostituisci tutto il contenuto del tuo file JavaScript principale su GitHub con questo blocco.
-
-JavaScript
-
 // Contenuto Completo e Definitivo per script.js (o script_final.js)
 const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv'; 
 
@@ -22,6 +14,7 @@ function formatDate(dateString) {
 }
 
 // Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto e l'ordinamento)
+// NOTA: 'Comparison' ha la 'C' maiuscola qui e ovunque!
 function parseDateForComparison(dateString) {
     if (!dateString || dateString.length < 10) return "1900-01-01"; 
     const parts = dateString.split('-');
@@ -91,11 +84,11 @@ function filterRaces() {
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-    // LOGICA DI ORDINAMENTO AFFIDABILE (basata sulla stringa ISO)
+    // LOGICA DI ORDINAMENTO AFFIDABILE (basata sulla stringa ISO), USANDO 'C' MAIUSCOLA
     data.sort((a, b) => {
         const dateA = parseDateForComparison(a.data);
         const dateB = parseDateForComparison(b.data);
-        if (dateA < dateB) return -1; // Ordina le date più vecchie prima (dal passato al futuro)
+        if (dateA < dateB) return -1;
         if (dateA > dateB) return 1;
         return 0;
     }); 
@@ -105,7 +98,7 @@ function renderTable(data) {
     data.forEach(race => {
         const row = tableBody.insertRow();
         
-        // USO DELLA FUNZIONE parseDateForComparison per la verifica dello stato!
+        // CONFRONTO STATO: USANDO 'C' MAIUSCOLA
         const isPastRace = race.data && parseDateForComparison(race.data) < today; 
 
         if (isPastRace) {
@@ -147,6 +140,3 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
-
-
-
