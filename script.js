@@ -89,12 +89,16 @@ function filterRaces() {
 function renderTable(data) {
     tableBody.innerHTML = '';
     
-   // LOGICA DI ORDINAMENTO: Dalla data più GRANDE/NUOVA alla più PICCOLA/VECCHIA
+   // NUOVA LOGICA: Ordina per ID Crescente (dal più piccolo al più grande)
 data.sort((a, b) => {
-    const dateA = parseDateForComparison(a.data);
-    const dateB = parseDateForComparison(b.data);
-    if (dateA > dateB) return -1; // A viene prima se è più nuovo
-    if (dateA < dateB) return 1;  // A viene dopo se è più vecchio
+    // Convertiamo gli ID in numeri per un confronto affidabile
+    const idA = parseInt(a.ID, 10);
+    const idB = parseInt(b.ID, 10);
+
+    // Se idA è più piccolo di idB, A viene PRIMA (-1)
+    if (idA < idB) return -1;
+    // Se idA è più grande di idB, A viene DOPO (1)
+    if (idA > idB) return 1;
     return 0;
 });
 
@@ -168,5 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
