@@ -82,19 +82,29 @@ function filterRaces() {
 
 function renderTable(data) {
     tableBody.innerHTML = '';
-    data.sort((a, b) => new Date(parseDateForComparison(a.data)) - new Date(parseDateForComparison(b.data))); 
+    
+    // NUOVA LOGICA DI ORDINAMENTO: Ordinamento basato sulla stringa ISO (AAAA-MM-GG)
+    data.sort((a, b) => {
+        const dateA = parseDateForComparison(a.data);
+        const dateB = parseDateForComparison(b.data);
+        if (dateA < dateB) return -1;
+        if (dateA > dateB) return 1;
+        return 0;
+    }); 
+
     const today = new Date().toISOString().split('T')[0];
     
     data.forEach(race => {
         const row = tableBody.insertRow();
         
-        // USO DELLA NUOVA FUNZIONE parseDateForComparison per la verifica dello stato!
-        const isPastRace = race.data && parseDateForComparison(race.data) < today; 
+        // USO DELLA FUNZIONE parseDateForComparison per la verifica dello stato!
+        const isPastRace = race.data && parseDateForcomparison(race.data) < today; 
 
         if (isPastRace) {
             row.classList.add('past-race');
         }
         
+        // USO DELLA FUNZIONE formatDate per la visualizzazione
         row.insertCell().textContent = formatDate(race.data);
         
         const eventCell = row.insertCell();
@@ -123,12 +133,12 @@ function renderTable(data) {
     });
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
     loadDataFromSheet();
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
