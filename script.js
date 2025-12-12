@@ -14,7 +14,6 @@ function formatDate(dateString) {
 }
 
 // Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto e l'ordinamento)
-// NOTA: 'Comparison' ha la 'C' maiuscola qui e ovunque!
 function parseDateForComparison(dateString) {
     if (!dateString || dateString.length < 10) return "1900-01-01"; 
     const parts = dateString.split('-');
@@ -52,7 +51,7 @@ function loadDataFromSheet() {
         },
         error: function(error) {
             console.error("Errore nel caricamento del foglio di calcolo:", error);
-            tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">ERRORE: Impossibile caricare i dati. Verifica l\'URL CSV e i nomi delle colonne.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="11" style="text-align:center; color:red;">ERRORE: Impossibile caricare i dati. Verifica l\'URL CSV e i nomi delle colonne.</td></tr>';
         }
     });
 }
@@ -81,13 +80,15 @@ function filterRaces() {
     renderTable(filteredData);
 }
 
-  
-    // LOGICA DI ORDINAMENTO AFFIDABILE (dal più recente al più vecchio)
+function renderTable(data) {
+    tableBody.innerHTML = '';
+    
+    // LOGICA DI ORDINAMENTO: Dalla data più GRANDE/NUOVA alla più PICCOLA/VECCHIA
     data.sort((a, b) => {
         const dateA = parseDateForComparison(a.data);
         const dateB = parseDateForComparison(b.data);
-        if (dateA < dateB) return 1; // Invertito: se A è più piccolo (più vecchio) di B, A viene dopo (1)
-        if (dateA > dateB) return -1;
+        if (dateA < dateB) return 1; // Se A è più piccolo (più vecchio) di B, A viene DOPO (1)
+        if (dateA > dateB) return -1; // Se A è più grande (più nuovo) di B, A viene PRIMA (-1)
         return 0;
     }); 
 
@@ -126,7 +127,7 @@ function filterRaces() {
         row.insertCell().textContent = race.regione;
 
         // 7. OBIETTIVO
-        row.insertCell().textContent = race.obiettivo || 'N/D';
+        row.insertCell().textContent = race.obiettivo || '';
 
         // 8. RISULTATO (TempoFinale) - Mostra solo se gara passata
         const resultCell = row.insertCell();
@@ -161,4 +162,3 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
-
