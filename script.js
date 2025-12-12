@@ -81,15 +81,13 @@ function filterRaces() {
     renderTable(filteredData);
 }
 
-function renderTable(data) {
-    tableBody.innerHTML = '';
-    
-    // LOGICA DI ORDINAMENTO AFFIDABILE (basata sulla stringa ISO), USANDO 'C' MAIUSCOLA
+  
+    // LOGICA DI ORDINAMENTO AFFIDABILE (dal più recente al più vecchio)
     data.sort((a, b) => {
         const dateA = parseDateForComparison(a.data);
         const dateB = parseDateForComparison(b.data);
-        if (dateA < dateB) return -1;
-        if (dateA > dateB) return 1;
+        if (dateA < dateB) return 1; // Invertito: se A è più piccolo (più vecchio) di B, A viene dopo (1)
+        if (dateA > dateB) return -1;
         return 0;
     }); 
 
@@ -98,37 +96,60 @@ function renderTable(data) {
     data.forEach(race => {
         const row = tableBody.insertRow();
         
-        // CONFRONTO STATO: USANDO 'C' MAIUSCOLA
+        // Determina se la gara è passata (necessario per Stato e Risultato)
         const isPastRace = race.data && parseDateForComparison(race.data) < today; 
 
         if (isPastRace) {
             row.classList.add('past-race');
         }
         
-        // Visualizzazione della data (GG/MM/AAAA)
+        // 1. DATA (Formattata GG/MM/AAAA)
         row.insertCell().textContent = formatDate(race.data);
         
+        // 2. EVENTO (Con Link a dettaglio.html)
         const eventCell = row.insertCell();
         const eventLink = document.createElement('a');
         eventLink.href = `dettaglio.html?id=${race.ID}`; 
-        eventLink.textContent = `${race.evento} (${race.tipo} ${race.distanza})`; 
+        eventLink.textContent = race.evento; 
         eventCell.appendChild(eventLink);
         
-        row.insertCell().textContent = `${race.citta} (${race.regione})`;
+        // 3. TIPO
+        row.insertCell().textContent = race.tipo;
 
-        let risultato = '';
-        if (isPastRace) {
-            risultato = race.tempoFinale || 'N/D';
-        } else {
-            risultato = race.obiettivo || 'Obiettivo non definito';
-        }
-        row.insertCell().textContent = risultato;
+        // 4. DISTANZA
+        row.insertCell().textContent = race.distanza;
 
+        // 5. CITTÀ
+        row.insertCell().textContent = race.citta;
+        
+        // 6. REGIONE
+        row.insertCell().textContent = race.regione;
+
+        // 7. OBIETTIVO
+        row.insertCell().textContent = race.obiettivo || 'N/D';
+
+        // 8. RISULTATO (TempoFinale) - Mostra solo se gara passata
+        const resultCell = row.insertCell();
+        resultCell.textContent = (isPastRace && race.tempoFinale) ? race.tempoFinale : '';
+
+        // 9. PB (Personal Best)
         const pbCell = row.insertCell();
         pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; 
         pbCell.style.textAlign = 'center';
+
+        // 10. SITO WEB (Come Link Cliccabile)
+        const webCell = row.insertCell();
+        if (race.sitoWeb) {
+            const webLink = document.createElement('a');
+            webLink.href = race.sitoWeb;
+            webLink.textContent = 'Link';
+            webLink.target = '_blank';
+            webCell.appendChild(webLink);
+        } else {
+            webCell.textContent = '';
+        }
         
-        // Logica dello Stato: Completata solo se passata E TempoFinale NON è vuoto
+        // 11. STATO
         const stato = isPastRace ? (race.tempoFinale ? 'Completata' : 'Ritirata') : 'In Programma';
         row.insertCell().textContent = stato;
     });
@@ -140,3 +161,4 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
