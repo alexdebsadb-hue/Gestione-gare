@@ -15,11 +15,10 @@ function formatDate(dateString) {
 
 // Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (PER ORDINAMENTO E CONFRONTO AFFIDABILE)
 function parseDateObject(dateString) {
-    // Data di default FUTURA (Anno 2099) per garantire che lo stato sia 'In Programma' 
-    // se la data non è leggibile (o vuota).
+    // Data di default FUTURA (Anno 2099)
     const FUTURE_DEFAULT = new Date(Date.UTC(2099, 0, 1)); 
 
-    if (!dateString || dateString.length < 10) return FUTURE_DEFAULT; // <-- CAMBIATO QUI
+    if (!dateString || dateString.length < 10) return FUTURE_DEFAULT;
     const parts = dateString.split('-');
     
     if (parts.length === 3) {
@@ -27,17 +26,24 @@ function parseDateObject(dateString) {
         const month = parseInt(parts[1], 10) - 1; 
         const day = parseInt(parts[0], 10);
         
-        // Verifica se i valori sono validi (es. non NaN)
-        if (isNaN(year) || isNaN(month) || isNaN(day)) {
-             return FUTURE_DEFAULT; // <-- CAMBIATO ANCHE QUI
+        // Verifica se i valori numerici sono validi
+        if (isNaN(year) || isNaN(month) || isNaN(day) || year < 2000) {
+            return FUTURE_DEFAULT;
         }
 
-        // Crea un oggetto Date basato sull'UTC per evitare problemi di fuso orario
-        return new Date(Date.UTC(year, month, day));
-    }
-    return FUTURE_DEFAULT; // <-- CAMBIATO ANCHE QUI
-}
+        // Crea l'oggetto Data in UTC
+        const dateObj = new Date(Date.UTC(year, month, day));
 
+        // CONTROLLO CRITICO: Verifica se l'oggetto data è un 'Invalid Date'.
+        // Se non è valido, significa che i numeri (es. 31 Febbraio) non funzionano.
+        if (isNaN(dateObj.getTime())) {
+            return FUTURE_DEFAULT;
+        }
+        
+        return dateObj;
+    }
+    return FUTURE_DEFAULT; 
+}
 
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -183,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
