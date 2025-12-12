@@ -13,28 +13,29 @@ function formatDate(dateString) {
     return dateString.replace(/-/g, '/');
 }
 
-// Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (TENTATIVO INVERSIONE)
+// Funzione per convertire GG-MM-AAAA/GG in un oggetto Date UTC (Correzione Finale)
 function parseDateObject(dateString) {
     // Data di default FUTURA (Anno 2099)
     const FUTURE_DEFAULT = new Date(Date.UTC(2099, 0, 1)); 
 
     if (!dateString || dateString.length < 10) return FUTURE_DEFAULT;
     
-    // Sostituiamo gli slash con i trattini, nel caso il CSV abbia cambiato il delimitatore
-    const cleanedString = dateString.replace(/\//g, '-');
+    // **PASSO CRITICO:** Sostituisce slash (/) con trattini (-) per garantire la divisione
+    const cleanedString = dateString.replace(/\//g, '-'); 
     const parts = cleanedString.split('-');
     
     if (parts.length === 3) {
-        // Tentativo di lettura AAAA-MM-GG (Il formato CSV più comune)
-        const year = parseInt(parts[0], 10);   // <-- Leggiamo l'anno qui
-        const month = parseInt(parts[1], 10) - 1; 
-        const day = parseInt(parts[2], 10);    // <-- Leggiamo il giorno qui
+        // Ordine: GG-MM-AAAA
+        const day = parseInt(parts[0], 10);      // parts[0] = GG
+        const month = parseInt(parts[1], 10) - 1;  // parts[1] = MM (meno 1)
+        const year = parseInt(parts[2], 10);     // parts[2] = AAAA
         
         // Se non riusciamo a leggere i numeri, usiamo il fallback futuro
         if (isNaN(year) || isNaN(month) || isNaN(day)) {
             return FUTURE_DEFAULT;
         }
 
+        // Creiamo l'oggetto Data in UTC
         const dateObj = new Date(Date.UTC(year, month, day));
         
         // Se la data è "Invalid Date", usiamo il fallback
@@ -44,7 +45,7 @@ function parseDateObject(dateString) {
         
         return dateObj;
     }
-    return FUTURE_DEFAULT; // Fallback se la stringa non è nel formato atteso
+    return FUTURE_DEFAULT; 
 }
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -190,6 +191,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
