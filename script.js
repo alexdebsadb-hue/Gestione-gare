@@ -253,6 +253,8 @@ function renderTable(data) {
 }
 
 
+// ... (omesso codice per le funzioni di utilità e logica di base) ...
+
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
@@ -273,7 +275,9 @@ function loadDataFromSheet() {
                     ID: row['ID'] || (row['Data'] + row['Evento'] + row['Città'] + row['Distanza']), 
                     data: row['Data'],
                     evento: row['Evento'],
-                    tipo: row['Ruolo Strategico'] ? row['Ruolo Strategico'].split(' ')[0].replace('OBIETTIVO', '').trim() : '', 
+                    // *** CORREZIONE: Leggiamo direttamente il campo 'Tipo' dal CSV ***
+                    tipo: row['Tipo'] || '', 
+                    // **************************************************************
                     distanza: row['Distanza'] || '',
                     citta: row['Città'] || '',
                     regione: row['Regione'] || '',
@@ -283,7 +287,22 @@ function loadDataFromSheet() {
                     sitoWeb: row['Sito Web'] || '',
                 }));
             
-            populateFilterSelect(raceData);
+            // Re-implementazione di populateFilterSelect per includere tutti i tipi
+            const types = new Set();
+            raceData.forEach(race => {
+                if (race.tipo) {
+                    types.add(race.tipo);
+                }
+            });
+
+            filterSelect.innerHTML = '<option value="Tutti">Tutti i Tipi</option>';
+            Array.from(types).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                filterSelect.appendChild(option);
+            });
+            
             renderTable(raceData);
         },
         error: (error) => {
@@ -293,6 +312,7 @@ function loadDataFromSheet() {
     });
 }
 
+// ... (omesso codice per l'inizializzazione) ...
 
 // =========================================================================
 // INIZIALIZZAZIONE
@@ -310,3 +330,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
