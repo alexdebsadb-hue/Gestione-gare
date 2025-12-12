@@ -8,14 +8,9 @@ let raceData = [];
 
 // Funzione per formattare la data da GG-MM-AAAA a GG/MM/AAAA (per la visualizzazione)
 function formatDate(dateString) {
-    if (!dateString || dateString.length < 10) return dateString;
-    // La data è attesa in formato GG-MM-AAAA (es. 14-12-2025)
-    const parts = dateString.split('-');
-    // Restituiamo in formato GG/MM/AAAA (es. 14/12/2025)
-    if (parts.length === 3) {
-        return `${parts[0]}/${parts[1]}/${parts[2]}`;
-    }
-    return dateString;
+    if (!dateString) return '';
+    // Sostituisce tutti i trattini con gli slash
+    return dateString.replace(/-/g, '/');
 }
 
 // Funzione per convertire GG-MM-AAAA in AAAA-MM-GG (per il confronto)
@@ -134,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
