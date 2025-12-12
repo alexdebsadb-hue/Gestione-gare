@@ -13,35 +13,38 @@ function formatDate(dateString) {
     return dateString.replace(/-/g, '/');
 }
 
-// Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (Correzione Finale)
+// Funzione per convertire GG-MM-AAAA in un oggetto Date UTC (TENTATIVO INVERSIONE)
 function parseDateObject(dateString) {
     // Data di default FUTURA (Anno 2099)
     const FUTURE_DEFAULT = new Date(Date.UTC(2099, 0, 1)); 
 
     if (!dateString || dateString.length < 10) return FUTURE_DEFAULT;
-    const parts = dateString.split('-');
+    
+    // Sostituiamo gli slash con i trattini, nel caso il CSV abbia cambiato il delimitatore
+    const cleanedString = dateString.replace(/\//g, '-');
+    const parts = cleanedString.split('-');
     
     if (parts.length === 3) {
-        const year = parseInt(parts[2], 10);
+        // Tentativo di lettura AAAA-MM-GG (Il formato CSV più comune)
+        const year = parseInt(parts[0], 10);   // <-- Leggiamo l'anno qui
         const month = parseInt(parts[1], 10) - 1; 
-        const day = parseInt(parts[0], 10);
+        const day = parseInt(parts[2], 10);    // <-- Leggiamo il giorno qui
         
         // Se non riusciamo a leggere i numeri, usiamo il fallback futuro
         if (isNaN(year) || isNaN(month) || isNaN(day)) {
             return FUTURE_DEFAULT;
         }
 
-        // Creiamo l'oggetto Data in UTC
         const dateObj = new Date(Date.UTC(year, month, day));
         
-        // Se la data è "Invalid Date" (es. 31 Febbraio), usiamo il fallback
+        // Se la data è "Invalid Date", usiamo il fallback
         if (isNaN(dateObj.getTime())) {
             return FUTURE_DEFAULT;
         }
         
         return dateObj;
     }
-    return FUTURE_DEFAULT; // Fallback se la stringa non è nel formato GG-MM-AAAA
+    return FUTURE_DEFAULT; // Fallback se la stringa non è nel formato atteso
 }
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -187,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('keyup', filterRaces);
     filterSelect.addEventListener('change', filterRaces); 
 });
+
 
 
 
