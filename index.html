@@ -3,47 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestione Gare - Il Mio Calendario</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Calendario Gare</title>
+    
+    <link rel="stylesheet" href="styles.css"> 
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>Il Mio Calendario Gare</h1>
+        <h1>🗓️ Calendario Gare Strategico</h1>
 
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="Cerca evento, città o distanza...">
-            <label for="filterSelect">Filtra:</label>
+        <div class="filter-controls">
+            <input type="text" id="searchInput" placeholder="Cerca per evento, città o distanza...">
             <select id="filterSelect">
-                <option value="">Tutti</option>
-            </select>
+                </select>
         </div>
 
-        <table id="racesTable">
-           <thead>
-    <tr>
-        <th>Data</th>
-        <th>Evento</th>
-        <th>Tipo</th>
-        <th>Distanza</th>
-        <th>Città</th>
-        <th>Regione</th>
-        <th>Obiettivo</th>
-        <th>Risultato</th>
-        <th>PB</th>
-        <th>Sito Web</th>
-        <th>Stato</th>
-    </tr>
-</thead>
-            <tbody id="racesTableBody">
+        <div id="race-tabs" class="tabs-container">
+            <button class="tab-button active" data-status-filter="Tutti">Tutti</button>
+            <button class="tab-button" data-status-filter="In Programma">In Programma</button>
+            <button class="tab-button" data-status-filter="Completata">Completata</button>
+            <button class="tab-button" data-status-filter="Ritirata">Ritirata</button>
+        </div>
+        
+        <div class="table-container">
+            <table id="racesTable" class="styled-table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Evento</th>
+                        <th>Tipo</th>
+                        <th>Distanza</th>
+                        <th>Città</th>
+                        <th>Regione</th>
+                        <th>Obiettivo</th>
+                        <th>Risultato</th>
+                        <th>PB</th>
+                        <th>Web</th>
+                        <th>Stato</th>
+                    </tr>
+                </thead>
+                <tbody id="racesTableBody">
+                    <tr>
+                        <td colspan="11" style="text-align: center;">Caricamento dati...</td>
+                    </tr>
                 </tbody>
-        </table>
+            </table>
+        </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
