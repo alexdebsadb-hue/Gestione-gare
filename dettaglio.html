@@ -17,7 +17,7 @@
         </div>
         
 4. 📝 Aggiorna detail_script_v2.js (Per mostrare Luogo e PB)
-Infine, modifica il file detail_script.js su GitHub per leggere i nuovi dati:
+Infine, modifica il file detail_script_v2.js su GitHub per leggere i nuovi dati:
 
 JavaScript
 
@@ -28,7 +28,7 @@ function renderDetails(race) {
     document.getElementById('detail-date').textContent = `${formatDate(race.Data)}`; 
     
     // NUOVI CAMPI LUOGO
-    document.getElementById('detail-luogo').innerHTML = `**Luogo:** ${race.Città}, ${race.Regione}`;
+    document.getElementById('detail-luogo').innerHTML = `**Luogo:** ${race.Citta}, ${race.Regione}`;
     document.getElementById('detail-tipo').innerHTML = `**Tipo di Gara:** ${race.Tipo} (${race.Distanza})`;
     
     // Logica Stato/Obiettivo/Risultato
@@ -47,4 +47,5 @@ function renderDetails(race) {
     // ... (Logica SitoWeb e Protocollo Gara invariata)
 }
 // ... (il resto del codice rimane invariato)
+
 
