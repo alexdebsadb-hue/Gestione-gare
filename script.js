@@ -150,6 +150,7 @@ function renderTable(data) {
         if (dateA.getTime() === new Date(0).getTime() && dateB.getTime() !== new Date(0).getTime()) return 1;
         if (dateA.getTime() !== new Date(0).getTime() && dateB.getTime() === new Date(0).getTime()) return -1;
         
+        // Ordina dal più recente al più vecchio (decrescente)
         if (dateA > dateB) return -1; 
         if (dateA < dateB) return 1;  
         return 0;
@@ -176,20 +177,15 @@ function renderTable(data) {
                 ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
                 : 'In Programma');
         
-        // 6. Assegnazione classi CSS per colore in base ESCLUSIVAMENTE al TIPO (Logica finale)
+        // 1. CORREZIONE COLORI (Logica Tipo Esatto)
         if (race.tipo) {
             const type = race.tipo.toLowerCase().trim();
             
-            // 1. Triathlon (Sfondo Rosso)
             if (type === 'triathlon') {
                 row.classList.add('race-triathlon'); 
-            } 
-            // 2. Duathlon (Sfondo Arancione)
-            else if (type === 'duathlon') {
+            } else if (type === 'duathlon') {
                 row.classList.add('race-duathlon'); 
-            }
-            // 3. Corsa (Sfondo Blu) - Include Ultra, Maratone, Mezzemaratone
-            else if (type === 'corsa') {
+            } else if (type === 'corsa') {
                 row.classList.add('race-corsa'); 
             } else {
                  row.classList.add('race-default'); 
@@ -232,7 +228,8 @@ function renderTable(data) {
         row.insertCell().textContent = race.regione || '';
 
         // 7. OBIETTIVO
-        row.insertCell().textContent = race.obiettivo || '';
+        const obiettivoCell = row.insertCell();
+        obiettivoCell.textContent = race.obiettivo || ''; // *** CORREZIONE: Reintrodotto Obiettivo ***
 
         // 8. RISULTATO
         const resultCell = row.insertCell();
@@ -240,7 +237,7 @@ function renderTable(data) {
 
         // 9. PB
         const pbCell = row.insertCell();
-        pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; 
+        pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; // *** CORREZIONE: Reintrodotto PB ***
         pbCell.style.textAlign = 'center';
 
         // 10. SITO WEB
@@ -259,7 +256,6 @@ function renderTable(data) {
         row.insertCell().textContent = stato;
     });
 }
-
 
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -335,3 +331,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
