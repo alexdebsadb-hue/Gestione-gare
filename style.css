@@ -1,184 +1,114 @@
-/* ==================================== */
-/* STILI GENERALI E LAYOUT */
-/* ==================================== */
-
-body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.container {
-    width: 95%;
-    max-width: 1400px;
-    background: #fff;
-    padding: 20px 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-h1 {
-    color: #0056b3;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-/* ==================================== */
-/* STILI FILTRI E RICERCA */
-/* ==================================== */
-
-.filter-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    gap: 15px;
-}
-
-#searchInput, #filterSelect {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-    flex: 1; /* Permette a entrambi di crescere */
-    min-width: 150px;
-}
-
-/* ==================================== */
-/* STILI TAB DI STATO (NOVITÀ) */
-/* ==================================== */
-
-.tabs-container {
-    display: flex;
-    margin-bottom: 0; /* Rimosso margine inferiore per attaccare alla tabella */
-    border-bottom: 2px solid #ccc; /* Linea sotto i tab */
-    width: 100%;
-}
-
-.tab-button {
-    padding: 10px 15px;
-    cursor: pointer;
-    border: none;
-    background-color: #e9e9e9;
-    color: #555;
-    outline: none;
-    transition: background-color 0.3s, color 0.3s;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    margin-right: 5px;
-    font-weight: 600;
-    border: 1px solid transparent;
-    border-bottom: none; /* Rimosso bordo inferiore per farlo sembrare parte del contenitore */
-}
-
-.tab-button.active {
-    background-color: #fff;
-    color: #0056b3;
-    /* Bordo che simula l'attaccamento al corpo della tabella */
-    border: 1px solid #ccc;
-    border-bottom: 2px solid #fff; 
-    position: relative;
-    z-index: 10;
-}
-
-/* ==================================== */
-/* STILI TABELLA E RIGHE */
-/* ==================================== */
-
-.table-container {
-    overflow-x: auto; /* Per tabelle grandi su schermi piccoli */
-    width: 100%;
-    margin-top: 0;
-}
-
-.styled-table {
+/* ======================================================= */
+/* STILI DI BASE PER LA TABELLA */
+/* ======================================================= */
+table {
     width: 100%;
     border-collapse: collapse;
-    margin: 0;
-    font-size: 0.9em;
-    min-width: 1000px; /* Assicura che la tabella sia leggibile */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+    margin-top: 20px;
+    font-family: Arial, sans-serif;
+    /* Assicurati che lo sfondo della tabella sia neutro se non usi un colore predefinito */
+    background-color: white; 
 }
-
-.styled-table thead tr {
-    background-color: #009879;
-    color: #ffffff;
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
     text-align: left;
-    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+th {
+    background-color: #f2f2f2;
+}
+/* Rimuovi l'hover standard che potrebbe interferire con i colori delle righe */
+/* tr:hover { background-color: #f5f5f5; } */
+
+
+/* ======================================================= */
+/* DEFINIZIONI COLORE PER TIPO GARA (Come richiesto) */
+/* ======================================================= */
+
+/* 1. TRIATHLON: Sfondo Rosso, Scritta Bianca */
+.race-triathlon {
+    background-color: #d32f2f; /* Rosso Scuro */
+    border-left: 5px solid #b71c1c;
+    color: white; 
+}
+.race-triathlon td {
+    color: white; /* Forza il testo bianco in tutte le celle */
 }
 
-.styled-table th,
-.styled-table td {
-    padding: 12px 15px;
-    border: 1px solid #dddddd;
+/* 2. DUATHLON: Sfondo Arancione, Scritta Nera */
+.race-duathlon {
+    background-color: #ffa000; /* Arancione Brillante */
+    border-left: 5px solid #ff6f00;
+    color: black; 
+}
+.race-duathlon td {
+    color: black; /* Forza il testo nero in tutte le celle */
 }
 
-.styled-table tbody tr {
-    border-bottom: 1px solid #dddddd;
+/* 3. CORSA: Sfondo Blu, Scritta Bianca (Include Ultra, Maratone, Mezzemaratone) */
+.race-corsa {
+    background-color: #1977d2; /* Blu Scuro */
+    border-left: 5px solid #0d47a1;
+    color: white; 
+}
+.race-corsa td {
+    color: white; /* Forza il testo bianco in tutte le celle */
 }
 
-.styled-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
+/* Fallback per tipo non riconosciuto */
+.race-default {
+    background-color: #f7f7f7;
+    border-left: 5px solid #ccc;
+    color: #333;
+}
+.race-default td {
+    color: #333;
 }
 
-/* Riga al passaggio del mouse */
-.styled-table tbody tr:hover {
-    background-color: #f0f8ff;
-    color: #000;
-}
 
-.styled-table tbody tr:last-of-type {
-    border-bottom: 2px solid #009879;
-}
+/* ======================================================= */
+/* COLORI PER STATO (Sovrascrivono il tipo per chiarezza) */
+/* ======================================================= */
 
-/* Stili specifici per link */
-.styled-table a {
-    color: #0056b3;
-    text-decoration: none;
-}
-
-.styled-table a:hover {
-    text-decoration: underline;
-}
-
-/* ==================================== */
-/* CLASSI DI COLORE (NOVITÀ) */
-/* ==================================== */
-
-/* Colori per TIPO di Gara */
-.race-maratona, .race-running {
-    background-color: #e0f7fa; /* Azzurro chiaro */
-}
-
-.race-ultra {
-    background-color: #fff3e0; /* Arancio chiaro/crema */
-}
-
-.race-triathlon, .race-ironman {
-    background-color: #fce4ec; /* Rosa chiaro */
-}
-
-/* Colore se la gara è passata (in generale) */
-.past-race {
-    opacity: 0.8;
-}
-
-/* Colore se la gara è "Ritirata" */
-.status-ritirata {
-    background-color: #ffcdd2 !important; /* Rosso molto chiaro, !important per sovrascrivere il colore del tipo */
-    font-style: italic;
-    font-weight: bold;
-    color: #d32f2f;
-}
-
-/* Colore se la gara è "Completata" */
+/* Gara Completata (Risultato registrato) */
 .status-completata {
-    background-color: #c8e6c9 !important; /* Verde chiaro */
+    /* Manteniamo uno sfondo chiaro per le gare passate completate */
+    background-color: #f1f8e9 !important; 
+    border-left-color: #2e7d32 !important;
+    color: black !important;
+    font-style: italic;
+}
+.status-completata td {
+    color: black !important;
+}
+
+/* Gara Ritirata (Passata ma senza tempo finale) */
+.status-ritirata {
+    background-color: #ffebee !important; 
+    color: #c62828 !important; 
+    border-left-color: #d32f2f !important;
     font-weight: bold;
-    color: #388e3c;
+}
+.status-ritirata td {
+    color: #c62828 !important;
+}
+
+/* Gara con data non valida o Errore */
+.status-invalid-date {
+    background-color: #fff8e1 !important;
+    border-left-color: #ffc107 !important;
+    color: #795548;
+}
+.status-invalid-date td {
+    color: #795548;
+}
+
+
+/* ======================================================= */
+/* OPACITÀ (Per le gare passate) */
+/* ======================================================= */
+.past-race {
+    /* Rende le gare passate meno invadenti */
+    opacity: 0.65;
 }
