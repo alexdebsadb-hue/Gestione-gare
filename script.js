@@ -269,8 +269,14 @@ function loadDataFromSheet() {
 
             const fields = results.meta.fields || [];
             
-            const tempoFinaleKey = fields.find(f => f && f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale')) || 'Tempo Finale';
-
+           const tempoFinaleKey = fields.find(f => f && f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale')) || 'Tempo Finale';
+            
+            // *** NUOVA RIGA 1: Rende Obiettivo robusto (cerca 'obiettivo' e 'pace') ***
+            const obiettivoKey = fields.find(f => f && f.toLowerCase().includes('obiettivo') && f.toLowerCase().includes('pace')) || 'Pace Target / Obiettivo';
+            
+            // *** NUOVA RIGA 2: Rende PB robusto (cerca 'pb' o 'best') ***
+            const pbKey = fields.find(f => f && f.toLowerCase().includes('pb') || f.toLowerCase().includes('best')) || 'PB';
+            
             raceData = results.data
                 .filter(row => row.Data && row.Evento)
                 .map(row => ({
@@ -331,5 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
