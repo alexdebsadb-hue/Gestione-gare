@@ -32,7 +32,6 @@ function parseDateObject(dateString) {
     let cleanedString = dateString.trim();
 
     // 1. Rimuove il giorno della settimana se presente (es. "Sab 29/11/2025")
-    // (Nel tuo CSV non sembra esserci, ma è una sicurezza)
     cleanedString = cleanedString.replace(/^[A-Za-z]+\s+/, '').trim(); 
     
     // 2. Controllo e conversione da GG/MM/AAAA a AAAA-MM-GG (Formato ISO)
@@ -72,7 +71,7 @@ function formatDate(dateString) {
 
 
 // =========================================================================
-// LOGICA DEI DATI E FILTRAGGIO (Nessuna modifica, è già stabile)
+// LOGICA DEI DATI E FILTRAGGIO
 // =========================================================================
 
 function populateFilterSelect(data) {
@@ -177,18 +176,27 @@ function renderTable(data) {
                 ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
                 : 'In Programma');
         
+        // 6. Assegnazione classi CSS per colore in base ESCLUSIVAMENTE al TIPO (Logica finale)
         if (race.tipo) {
-            const typeClass = race.tipo.toLowerCase().replace(/\s/g, ''); 
+            const type = race.tipo.toLowerCase().trim();
             
-            if (typeClass.includes('maratona') || typeClass.includes('running')) {
-                row.classList.add('race-running');
-            } else if (typeClass.includes('ultra')) {
-                row.classList.add('race-ultra');
-            } else if (typeClass.includes('triathlon') || typeClass.includes('ironman')) {
-                row.classList.add('race-triathlon');
+            // 1. Triathlon (Sfondo Rosso)
+            if (type === 'triathlon') {
+                row.classList.add('race-triathlon'); 
+            } 
+            // 2. Duathlon (Sfondo Arancione)
+            else if (type === 'duathlon') {
+                row.classList.add('race-duathlon'); 
+            }
+            // 3. Corsa (Sfondo Blu) - Include Ultra, Maratone, Mezzemaratone
+            else if (type === 'corsa') {
+                row.classList.add('race-corsa'); 
+            } else {
+                 row.classList.add('race-default'); 
             }
         }
         
+        // Assegna la classe di colore basata sullo STATO (ha la priorità visiva)
         if (stato === 'Ritirata') {
             row.classList.add('status-ritirata');
         } else if (stato === 'Completata') {
@@ -253,8 +261,6 @@ function renderTable(data) {
 }
 
 
-// ... (omesso codice per le funzioni di utilità e logica di base) ...
-
 function loadDataFromSheet() {
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
@@ -312,7 +318,6 @@ function loadDataFromSheet() {
     });
 }
 
-// ... (omesso codice per l'inizializzazione) ...
 
 // =========================================================================
 // INIZIALIZZAZIONE
@@ -330,4 +335,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
