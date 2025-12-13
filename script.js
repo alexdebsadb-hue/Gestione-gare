@@ -285,7 +285,7 @@ function loadDataFromSheet() {
                     regione: row['Regione'] || '',
                     obiettivo: row['Pace Target / Obiettivo'] || '',
                     tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
-                    pb: row['PB'] === 'Si',
+                   pb: row['PB'] && (row['PB'].toLowerCase() === 'x'),
                     sitoWeb: row['Sito Web'] || '',
                 }));
             
@@ -331,4 +331,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
