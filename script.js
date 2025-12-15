@@ -263,60 +263,54 @@ function loadDataFromSheet() {
         header: true,
         complete: (results) => {
             if (!results.data || results.data.length === 0) {
-                 tableBody.innerHTML = '<tr><td colspan="11" style="color: blue; text-align: center;">Dati caricati, ma il foglio è vuoto.</td></tr>';
-                 return;
+                tableBody.innerHTML = '<tr><td colspan="11" style="color: blue; text-align: center;">Dati caricati, ma il foglio è vuoto.</td></tr>';
+                return;
             }
 
             const fields = results.meta.fields || [];
             
-           const tempoFinaleKey = fields.find(f => f && f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale')) || 'Tempo Finale';
+            // Chiave finale dinamica (la lasciamo perché è la più robusta)
+            const tempoFinaleKey = fields.find(f => f && f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale')) || 'Tempo Finale';
             
-            // *** NUOVA RIGA 1: Rende Obiettivo robusto (cerca 'obiettivo' e 'pace') ***
-            const obiettivoKey = fields.find(f => f && f.toLowerCase().includes('obiettivo') && f.toLowerCase().includes('pace')) || 'Pace Target / Obiettivo';
+            // NON AGGIUNGERE QUI obiettivoKey o pbKey DINAMICHE!
             
-            // *** NUOVA RIGA 2: Rende PB robusto (cerca 'pb' o 'best') ***
-            const pbKey = fields.find(f => f && f.toLowerCase().includes('pb') || f.toLowerCase().includes('best')) || 'PB';
-            
+            // Mappiamo i dati usando i nomi fissi che sappiamo essere nel tuo CSV (ma con robustezza aggiunta)
             raceData = results.data
                 .filter(row => row.Data && row.Evento)
-                .map(row => ({
-                    ID: row['ID'] || (row['Data'] + row['Evento'] + row['Città'] + row['Distanza']), 
-                    data: row['Data'],
-                    evento: row['Evento'],
-                    // *** CORREZIONE: Leggiamo direttamente il campo 'Tipo' dal CSV ***
-                    tipo: row['Tipo'] || '', 
-                    // **************************************************************
-                    distanza: row['Distanza'] || '',
-                    citta: row['Città'] || '',
-                    regione: row['Regione'] || '',
-                    obiettivo: row['Pace Target / Obiettivo'] || '',
-                    tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
-                   pb: row['PB'] && (row['PB'].toLowerCase() === 'x'),
-                    sitoWeb: row['Sito Web'] || '',
-                }));
-            
-            // Re-implementazione di populateFilterSelect per includere tutti i tipi
-            const types = new Set();
-            raceData.forEach(race => {
-                if (race.tipo) {
-                    types.add(race.tipo);
-                }
-            });
+                .map(row => {
+                    
+                    // Assicuriamo che la chiave 'Città' o 'Citta' o 'città' funzioni
+                    const cittaValue = row['Città'] || row['Citta'] || ''; 
 
-            filterSelect.innerHTML = '<option value="Tutti">Tutti i Tipi</option>';
-            Array.from(types).sort().forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                filterSelect.appendChild(option);
-            });
+                    return {
+                        ID: row['ID'] || (row['Data'] + row['Evento'] + cittaValue + row['Distanza']), 
+                        data: row['Data'],
+                        evento: row['Evento'],
+                        tipo: row['Tipo'] || '', 
+                        distanza: row['Distanza'] || '',
+                        
+                        // USA IL VALORE ROBUSTO APPENA TROVATO
+                        citta: cittaValue, 
+                        
+                        regione: row['Regione'] || '',
+                        
+                        // OBIETTIVO: Usiamo la chiave fissa
+                        obiettivo: row['Pace Target / Obiettivo'] || '', 
+                        
+                        tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
+                        
+                        // PB: CORREZIONE CRITICA - Aggiungiamo .trim()
+                        pb: row['PB'] && (row['PB'].trim().toLowerCase() === 'x'),
+                        
+                        sitoWeb: row['Sito Web'] || '',
+                    };
+                });
+            
+            // ... (il resto della funzione completa: populateFilterSelect, renderTable)
             
             renderTable(raceData);
         },
-        error: (error) => {
-            console.error("Errore nel caricamento del CSV:", error);
-            tableBody.innerHTML = '<tr><td colspan="11" style="color: red; text-align: center;">ERRORE: Impossibile caricare il calendario. Controlla l\'URL CSV e la connessione.</td></tr>';
-        }
+        // ... (omesso error)
     });
 }
 
@@ -337,6 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
