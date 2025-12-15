@@ -267,61 +267,59 @@ function loadDataFromSheet() {
                 return;
             }
 
-            const fields = results.meta.fields || [];
+            // Non abbiamo bisogno di keys dinamiche complicate, usiamo i nomi esatti che hai fornito.
             
-            // Chiave finale dinamica (la lasciamo perché è la più robusta)
-            const tempoFinaleKey = fields.find(f => f && f.toLowerCase().includes('tempo') && f.toLowerCase().includes('finale')) || 'Tempo Finale';
-            
-            // NON AGGIUNGERE QUI obiettivoKey o pbKey DINAMICHE!
-            
-            // NON AGGIUNGERE QUI obiettivoKey o pbKey DINAMICHE!
-
-            // Mappiamo i dati usando i nomi fissi che sappiamo essere nel tuo CSV (ma con robustezza aggiunta)
             raceData = results.data
                 .filter(row => row.Data && row.Evento)
-                .map(row => {
+                .map(row => ({
+                    ID: row['ID'] || (row['Data'] + row['Evento'] + row['Citta'] + row['Distanza']), 
+                    data: row['Data'],
+                    evento: row['Evento'],
+                    tipo: row['Tipo'] || '', 
+                    distanza: row['Distanza'] || '',
                     
-                    // 1. GESTIONE CHIAVE CITTÀ (Cerca la chiave corretta in modo robusto)
-                    const cittaKey = fields.find(f => f && f.toLowerCase().includes('città') || f.toLowerCase().includes('citta')) || 'Città';
+                    // 1. CORREZIONE CITTÀ (Citta senza accento)
+                    citta: row['Citta'] || '',
                     
-                    // 2. GESTIONE CHIAVE OBIETTIVO (Cerca la chiave corretta in modo robusto)
-                    const obiettivoKey = fields.find(f => f && f.toLowerCase().includes('obiettivo') && f.toLowerCase().includes('pace')) || 'Pace Target / Obiettivo';
+                    regione: row['Regione'] || '',
                     
-                    // 3. GESTIONE CHIAVE PB (La tua chiave è 'PB')
-                    const pbKey = 'PB'; 
+                    // 2. CORREZIONE OBIETTIVO (Solo 'Obiettivo', niente 'Pace Target /')
+                    obiettivo: row['Obiettivo'] || '', 
                     
-                    return {
-                        ID: row['ID'] || (row['Data'] + row['Evento'] + row[cittaKey] + row['Distanza']), 
-                        data: row['Data'],
-                        evento: row['Evento'],
-                        tipo: row['Tipo'] || '', 
-                        distanza: row['Distanza'] || '',
-                        
-                        // USA LA CHIAVE DINAMICA TROVATA
-                        citta: row[cittaKey] || '', 
-                        
-                        regione: row['Regione'] || '',
-                        
-                        // USA LA CHIAVE DINAMICA TROVATA
-                        obiettivo: row[obiettivoKey] || '', 
-                        
-                        tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
-                        
-                        // PB: USA LA CHIAVE FISSA MA CON LA LOGICA TRIM/LOWERCASE
-                        pb: row[pbKey] && (row[pbKey].trim().toLowerCase() === 'x'),
-                        
-                        sitoWeb: row['Sito Web'] || '',
-                    };
-                });
+                    // 3. CORREZIONE TEMPO FINALE (TempoFinale senza spazio)
+                    tempoFinale: row['TempoFinale'] || '', 
+                    
+                    // 4. PB (Manteniamo la logica X + trim per sicurezza)
+                    pb: row['PB'] && (row['PB'].trim().toLowerCase() === 'x'),
+                    
+                    // 5. CORREZIONE SITO WEB (SitoWeb senza spazio)
+                    sitoWeb: row['SitoWeb'] || '',
+                }));
             
-            // ... (il resto della funzione completa: populateFilterSelect, renderTable)
+            // Re-implementazione di populateFilterSelect per includere tutti i tipi
+            const types = new Set();
+            raceData.forEach(race => {
+                if (race.tipo) {
+                    types.add(race.tipo);
+                }
+            });
+
+            filterSelect.innerHTML = '<option value="Tutti">Tutti i Tipi</option>';
+            Array.from(types).sort().forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                filterSelect.appendChild(option);
+            });
             
             renderTable(raceData);
         },
-        // ... (omesso error)
+        error: (error) => {
+            console.error("Errore nel caricamento del CSV:", error);
+            tableBody.innerHTML = '<tr><td colspan="11" style="color: red; text-align: center;">ERRORE: Impossibile caricare il calendario. Controlla l\'URL CSV e la connessione.</td></tr>';
+        }
     });
 }
-
 
 // =========================================================================
 // INIZIALIZZAZIONE
@@ -339,6 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
