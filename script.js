@@ -267,10 +267,12 @@ function loadDataFromSheet() {
                 return;
             }
 
-            // Non abbiamo bisogno di keys dinamiche complicate, usiamo i nomi esatti che hai fornito.
+            // Usiamo i nomi esatti che hai confermato (TempoFinale, Obiettivo, Citta, SitoWeb)
             
             raceData = results.data
-                .filter(row => row.Data && row.Evento)
+                // FILTRO: Rimuoviamo il filtro restrittivo qui, lo lasciamo solo su renderTable.
+                // Filtriamo solo righe con almeno una data o un nome evento.
+                .filter(row => row['Data'] || row['Evento']) 
                 .map(row => ({
                     ID: row['ID'] || (row['Data'] + row['Evento'] + row['Citta'] + row['Distanza']), 
                     data: row['Data'],
@@ -278,25 +280,19 @@ function loadDataFromSheet() {
                     tipo: row['Tipo'] || '', 
                     distanza: row['Distanza'] || '',
                     
-                    // 1. CORREZIONE CITTÀ (Citta senza accento)
+                    // CORREZIONE DEFINITIVA NOMI COLONNA
                     citta: row['Citta'] || '',
-                    
                     regione: row['Regione'] || '',
-                    
-                    // 2. CORREZIONE OBIETTIVO (Solo 'Obiettivo', niente 'Pace Target /')
                     obiettivo: row['Obiettivo'] || '', 
+                    tempoFinale: row['TempoFinale'] || '', // Corretto: TempoFinale senza spazio
                     
-                    // 3. CORREZIONE TEMPO FINALE (TempoFinale senza spazio)
-                    tempoFinale: row['TempoFinale'] || '', 
-                    
-                    // 4. PB (Manteniamo la logica X + trim per sicurezza)
+                    // PB (Confermiamo la logica X + trim)
                     pb: row['PB'] && (row['PB'].trim().toLowerCase() === 'x'),
                     
-                    // 5. CORREZIONE SITO WEB (SitoWeb senza spazio)
-                    sitoWeb: row['SitoWeb'] || '',
+                    sitoWeb: row['SitoWeb'] || '', // Corretto: SitoWeb senza spazio
                 }));
             
-            // Re-implementazione di populateFilterSelect per includere tutti i tipi
+            // ... (populateFilterSelect)
             const types = new Set();
             raceData.forEach(race => {
                 if (race.tipo) {
@@ -312,6 +308,7 @@ function loadDataFromSheet() {
                 filterSelect.appendChild(option);
             });
             
+            // Renderizziamo i dati (che ora dovrebbero essere mappati correttamente)
             renderTable(raceData);
         },
         error: (error) => {
@@ -337,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
