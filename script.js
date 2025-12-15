@@ -337,7 +337,7 @@ function loadDataFromSheet() {
         },
         error: (error) => {
             console.error("Errore nel caricamento del CSV:", error);
-            tableBody.innerHTML = '<tr><td colspan="11" style="color: red; text-align: center;">ERRORE: Impossibile caricare il calendario. Controlla l\'URL CSV e la connessione.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="12" style="color: red; text-align: center;">ERRORE: Impossibile caricare il calendario. Controlla l\'URL CSV e la connessione.</td></tr>';
         }
     });
 }
@@ -358,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
