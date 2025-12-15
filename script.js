@@ -107,7 +107,7 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     
     const searchTerm = searchInput.value.toLowerCase().trim();
-    const typeFilter = filterSelect.value; // Legge il valore corrente dal Select
+    const typeFilter = filterSelect.value.trim(); // Legge il valore corrente dal Select
     const statusFilter = currentStatusFilter;
 
     const now = new Date();
@@ -281,7 +281,7 @@ function loadDataFromSheet() {
                     ID: row[0] || (row[1] + row[2] + row[4] + row[6]),
                     data: row[1],
                     evento: row[2],
-                    tipo: row[3] || '',
+                    tipo: row[3] ? row[3].trim().toLowerCase() : '',
                     distanza: row[6] || '',
                     citta: row[4] || '',
                     regione: row[5] || '',
@@ -324,3 +324,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
