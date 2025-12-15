@@ -17,6 +17,7 @@ const tabButtons = document.querySelectorAll('.tab-button');
 
 let raceData = [];
 let currentStatusFilter = 'Tutti'; // Stato di default per i tab
+let currentTypeFilter = 'Tutti'; // <--- AGGIUNGI QUESTA RIGA!
 
 
 /**
@@ -351,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
