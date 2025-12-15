@@ -115,13 +115,13 @@ function renderTable(data) {
     
     const searchTerm = searchInput.value.toLowerCase().trim();
     
-    // ==========================================================
-    // ATTENZIONE: Correggiamo la variabile del filtro TIPO GARA
-    // ==========================================================
-    const typeFilter = filterSelect.value; // <-- LEGGIAMO IL VALORE DAL SELECT!
+    // CORREZIONE QUI: LEGGI IL VALORE DAL SELECT!
+    const typeFilter = filterSelect.value; 
     
-    // Manteniamo questa variabile di stato solo per i tab Status:
+    // Questa variabile è corretta perché gestisce i pulsanti di Stato
     const statusFilter = currentStatusFilter; 
+
+    // ... (il resto della funzione continua)
     
     const now = new Date();
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())); 
@@ -358,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
