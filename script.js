@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del tuo foglio Google, esportato come CSV.
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv'; 
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv';
 
 // =========================================================================
 // VARIABILI GLOBALI E FUNZIONI UTILITY
@@ -16,42 +16,37 @@ const filterSelect = document.getElementById('filterSelect');
 const tabButtons = document.querySelectorAll('.tab-button');
 
 let raceData = [];
-let currentStatusFilter = 'Tutti'; // Stato di default per i tab
-let currentTypeFilter = 'Tutti'; // <--- AGGIUNGI QUESTA RIGA!
+let currentStatusFilter = 'Tutti';
+let currentTypeFilter = 'Tutti'; // Variabile di stato, usata qui solo per coerenza, non per la logica di filtering.
 
 
 /**
- * Normalizza la data della gara in un oggetto Date UTC (Mezzanotte) per confronto sicuro.
- * Implementa un FIX specifico per il formato italiano GG/MM/AAAA dal foglio Google,
- * convertendolo nel formato ISO (AAAA-MM-GG) riconosciuto universalmente da new Date().
- * * @param {string} dateString La stringa della data dal CSV (es: "13/09/2015").
- * @returns {Date} L'oggetto Date normalizzato in UTC.
+ * Normalizza la data della gara in un oggetto Date UTC per confronto sicuro,
+ * gestendo il formato italiano GG/MM/AAAA.
  */
 function parseDateObject(dateString) {
-    if (!dateString) return new Date(0); 
+    if (!dateString) return new Date(0);
     
     let cleanedString = dateString.trim();
 
-    // 1. Rimuove il giorno della settimana se presente (es. "Sab 29/11/2025")
-    cleanedString = cleanedString.replace(/^[A-Za-z]+\s+/, '').trim(); 
+    // Rimuove il giorno della settimana se presente (es. "Sab 29/11/2025")
+    cleanedString = cleanedString.replace(/^[A-Za-z]+\s+/, '').trim();
     
-    // 2. Controllo e conversione da GG/MM/AAAA a AAAA-MM-GG (Formato ISO)
+    // Controllo e conversione da GG/MM/AAAA a AAAA-MM-GG (Formato ISO)
     const parts = cleanedString.split('/');
     if (parts.length === 3) {
         const [day, month, year] = parts;
-        // Ricrea la stringa come AAAA-MM-GG. Se non è un formato GG/MM/AAAA, lo salta.
         cleanedString = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
     }
 
     try {
-        // new Date() con formato AAAA-MM-GG è robusto.
         const date = new Date(cleanedString);
         
-        if (isNaN(date.getTime())) { 
+        if (isNaN(date.getTime())) {
             return new Date(0); // Data Non Valida
         }
         
-        // Normalizza all'inizio del giorno (00:00:00) in UTC per confronto sicuro
+        // Normalizza all'inizio del giorno (00:00:00) in UTC
         return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
     } catch (e) {
         return new Date(0);
@@ -60,8 +55,6 @@ function parseDateObject(dateString) {
 
 /**
  * Formatta la data in GG/MM/AAAA per la visualizzazione.
- * @param {string} dateString La stringa della data dal CSV.
- * @returns {string} La data formattata.
  */
 function formatDate(dateString) {
     const date = parseDateObject(dateString);
@@ -114,43 +107,36 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     
     const searchTerm = searchInput.value.toLowerCase().trim();
-    
-    // CORREZIONE QUI: LEGGI IL VALORE DAL SELECT!
-    const typeFilter = filterSelect.value; 
-    
-    // Questa variabile è corretta perché gestisce i pulsanti di Stato
-    const statusFilter = currentStatusFilter; 
+    const typeFilter = filterSelect.value; // Legge il valore corrente dal Select
+    const statusFilter = currentStatusFilter;
 
-    // ... (il resto della funzione continua)
-    
     const now = new Date();
-    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())); 
+    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     
     let filteredData = data.filter(race => {
-        // Logica di filtraggio (rimane invariata)
         const raceDateObject = parseDateObject(race.data);
         const isDateValid = raceDateObject.getTime() !== new Date(0).getTime();
-        const isPastRace = isDateValid && raceDateObject <= todayUTC; 
+        const isPastRace = isDateValid && raceDateObject <= todayUTC;
         
-        const stato = !isDateValid 
-            ? 'Data Non Valida' 
-            : (isPastRace 
-                ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
+        const stato = !isDateValid
+            ? 'Data Non Valida'
+            : (isPastRace
+                ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata')
                 : 'In Programma');
         
-        const searchMatch = !searchTerm || 
-            race.evento.toLowerCase().includes(searchTerm) || 
-            race.citta.toLowerCase().includes(searchTerm) || 
+        const searchMatch = !searchTerm ||
+            race.evento.toLowerCase().includes(searchTerm) ||
+            race.citta.toLowerCase().includes(searchTerm) ||
             (race.distanza && race.distanza.toLowerCase().includes(searchTerm)) ||
             (race.regione && race.regione.toLowerCase().includes(searchTerm));
 
         const typeMatch = typeFilter === 'Tutti' || race.tipo === typeFilter;
-        const statusMatch = statusFilter === 'Tutti' || stato === statusFilter; 
+        const statusMatch = statusFilter === 'Tutti' || stato === statusFilter;
 
         return searchMatch && typeMatch && statusMatch;
     });
 
-    // Logica di ordinamento (rimane invariata)
+    // Logica di ordinamento (dal più recente al più vecchio)
     filteredData.sort((a, b) => {
         const dateA = parseDateObject(a.data);
         const dateB = parseDateObject(b.data);
@@ -158,50 +144,46 @@ function renderTable(data) {
         if (dateA.getTime() === new Date(0).getTime() && dateB.getTime() !== new Date(0).getTime()) return 1;
         if (dateA.getTime() !== new Date(0).getTime() && dateB.getTime() === new Date(0).getTime()) return -1;
         
-        // Ordina dal più recente al più vecchio (decrescente)
-        if (dateA > dateB) return -1; 
-        if (dateA < dateB) return 1; 
+        if (dateA > dateB) return -1;
+        if (dateA < dateB) return 1;
         return 0;
-    }); 
+    });
 
     if (filteredData.length === 0) {
         const row = tableBody.insertRow();
-        // Aumenta il colspan a 12 per includere la nuova colonna N.
-        row.insertCell().colSpan = 12; 
+        row.insertCell().colSpan = 12; // 12 colonne totali
         row.cells[0].textContent = "Nessuna gara trovata con i filtri selezionati.";
         row.cells[0].style.textAlign = 'center';
         return;
     }
 
-    // Variabile per contare le righe dopo il filtraggio
-    let rowIndex = 0; 
+    let rowIndex = 0;
     
     filteredData.forEach(race => {
-        const row = tableBody.insertRow(); 
+        const row = tableBody.insertRow();
         
-        // Calcola lo stato (rimane invariato)
+        // Calcola lo stato per la colorazione della riga
         const raceDateObject = parseDateObject(race.data);
         const isDateValid = raceDateObject.getTime() !== new Date(0).getTime();
-        const isPastRace = isDateValid && raceDateObject <= todayUTC; 
+        const isPastRace = isDateValid && raceDateObject <= todayUTC;
         
-        const stato = !isDateValid 
-            ? 'Data Non Valida' 
-            : (isPastRace 
-                ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
+        const stato = !isDateValid
+            ? 'Data Non Valida'
+            : (isPastRace
+                ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata')
                 : 'In Programma');
         
-        // Logica CSS (rimane invariata)
+        // Logica Classi CSS
         if (race.tipo) {
             const type = race.tipo.toLowerCase().trim();
-            // ... (logica classi CSS) ...
             if (type === 'triathlon') {
-                row.classList.add('race-triathlon'); 
+                row.classList.add('race-triathlon');
             } else if (type === 'duathlon') {
-                row.classList.add('race-duathlon'); 
+                row.classList.add('race-duathlon');
             } else if (type === 'corsa') {
-                row.classList.add('race-corsa'); 
+                row.classList.add('race-corsa');
             } else {
-                 row.classList.add('race-default'); 
+                 row.classList.add('race-default');
             }
         }
         
@@ -217,22 +199,20 @@ function renderTable(data) {
              row.classList.add('past-race');
         }
 
-       // ... (Logica CSS e Stato) ...
-
-        // *** NUOVO: Colonna N. progressivo ***
-        rowIndex++; // Incrementa il contatore per ogni riga visibile
+        // 0. N. progressivo
+        rowIndex++;
         const numberCell = row.insertCell();
         numberCell.textContent = rowIndex;
         numberCell.style.textAlign = 'center';
         
-        // 1. DATA (Ora nella seconda cella)
+        // 1. DATA
         row.insertCell().textContent = isDateValid ? formatDate(race.data) : `[${race.data}] - Data Non Valida`;
         
-        // 2. EVENTO (Ora nella terza cella)
+        // 2. EVENTO
         const eventCell = row.insertCell();
         const eventLink = document.createElement('a');
-        eventLink.href = `dettaglio.html?id=${race.ID}`; 
-        eventLink.textContent = race.evento; 
+        eventLink.href = `dettaglio.html?id=${race.ID}`;
+        eventLink.textContent = race.evento;
         eventCell.appendChild(eventLink);
         
         // 3. TIPO
@@ -277,66 +257,48 @@ function renderTable(data) {
     });
 }
 function loadDataFromSheet() {
-    // Rendiamo la mappatura più robusta contro i problemi di intestazione (header)
+    // PapaParse legge il CSV
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
-        // *** IMPORTANTE: Cambiamo header in false per leggere per indice ***
-        header: false,
+        header: false, // Leggiamo per indice di colonna
         complete: (results) => {
-            // Le righe dati sono results.data (la prima riga sono le intestazioni)
-            if (!results.data || results.data.length < 2) { 
-                tableBody.innerHTML = '<tr><td colspan="11" style="color: blue; text-align: center;">Dati caricati, ma non sono state trovate righe.</td></tr>';
+            
+            if (!results.data || results.data.length < 2) {
+                // Colspan corretto a 12
+                tableBody.innerHTML = '<tr><td colspan="12" style="color: blue; text-align: center;">Dati caricati, ma non sono state trovate righe.</td></tr>';
                 return;
             }
             
-            // La prima riga (indice 0) è l'intestazione che non mappiamo
             const rawData = results.data.slice(1);
 
-            // Mappatura basata sull'indice di colonna:
-            // 0: ID, 1: Data, 2: Evento, 3: Tipo, 4: Citta, 5: Regione, 6: Distanza, 7: TempoFinale, 8: PB, 9: Obiettivo, 10: SitoWeb
+            /* Mappatura CSV (Indici):
+             * 0: ID, 1: Data, 2: Evento, 3: Tipo, 4: Citta, 5: Regione, 6: Distanza, 7: TempoFinale, 8: PB, 9: Obiettivo, 10: SitoWeb
+             */
 
             raceData = rawData
-                .filter(row => row[1] && row[2]) // Filtra se Data (col 1) ed Evento (col 2) sono presenti
+                .filter(row => row[1] && row[2]) // Filtra se Data ed Evento sono presenti
                 .map(row => ({
-                    ID: row[0] || (row[1] + row[2] + row[4] + row[6]), 
+                    ID: row[0] || (row[1] + row[2] + row[4] + row[6]),
                     data: row[1],
                     evento: row[2],
-                    tipo: row[3] || '', 
+                    tipo: row[3] || '',
                     distanza: row[6] || '',
-                    
-                    // Mappiamo Città e Obiettivo per indice
                     citta: row[4] || '',
                     regione: row[5] || '',
-                    obiettivo: row[9] || '', 
-                    
-                    tempoFinale: row[7] || '', 
-                    
-                    // PB (Indice 8)
+                    obiettivo: row[9] || '',
+                    tempoFinale: row[7] || '',
                     pb: row[8] && (String(row[8]).trim().toLowerCase() === 'x'),
-                    
                     sitoWeb: row[10] || '',
                 }));
             
-            // ... (populateFilterSelect - il resto del codice rimane uguale)
-            const types = new Set();
-            raceData.forEach(race => {
-                if (race.tipo) {
-                    types.add(race.tipo);
-                }
-            });
-
-            filterSelect.innerHTML = '<option value="Tutti">Tutti i Tipi</option>';
-            Array.from(types).sort().forEach(type => {
-                const option = document.createElement('option');
-                option.value = type;
-                option.textContent = type;
-                filterSelect.appendChild(option);
-            });
+            // Popola il menu a tendina per il filtro tipo gara
+            populateFilterSelect(raceData);
             
             renderTable(raceData);
         },
         error: (error) => {
             console.error("Errore nel caricamento del CSV:", error);
+            // Colspan corretto a 12
             tableBody.innerHTML = '<tr><td colspan="12" style="color: red; text-align: center;">ERRORE: Impossibile caricare il calendario. Controlla l\'URL CSV e la connessione.</td></tr>';
         }
     });
@@ -350,25 +312,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tableBody) {
         loadDataFromSheet();
         
+        // Event Listener per la ricerca testuale
         searchInput.addEventListener('keyup', filterRaces);
+        
+        // Event Listener per il filtro tipo gara (Select)
         filterSelect.addEventListener('change', filterRaces);
         
+        // Event Listener per i filtri di stato (Pulsanti)
         tabButtons.forEach(button => {
             button.addEventListener('click', filterByStatus);
         });
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
