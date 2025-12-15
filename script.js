@@ -210,23 +210,23 @@ function renderTable(data) {
              row.classList.add('past-race');
         }
 
+       // ... (Logica CSS e Stato) ...
+
         // *** NUOVO: Colonna N. progressivo ***
         rowIndex++; // Incrementa il contatore per ogni riga visibile
         const numberCell = row.insertCell();
         numberCell.textContent = rowIndex;
         numberCell.style.textAlign = 'center';
         
-        // 1. DATA
+        // 1. DATA (Ora nella seconda cella)
         row.insertCell().textContent = isDateValid ? formatDate(race.data) : `[${race.data}] - Data Non Valida`;
         
-        // 2. EVENTO (Con Link a dettaglio.html)
+        // 2. EVENTO (Ora nella terza cella)
         const eventCell = row.insertCell();
         const eventLink = document.createElement('a');
         eventLink.href = `dettaglio.html?id=${race.ID}`; 
         eventLink.textContent = race.evento; 
         eventCell.appendChild(eventLink);
-        
-        // ... (il resto delle colonne rimane come prima, spostato di un indice) ...
         
         // 3. TIPO
         row.insertCell().textContent = race.tipo || '';
@@ -269,7 +269,6 @@ function renderTable(data) {
         row.insertCell().textContent = stato;
     });
 }
-
 function loadDataFromSheet() {
     // Rendiamo la mappatura più robusta contro i problemi di intestazione (header)
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -352,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
