@@ -274,33 +274,41 @@ function loadDataFromSheet() {
             
             // NON AGGIUNGERE QUI obiettivoKey o pbKey DINAMICHE!
             
+            // NON AGGIUNGERE QUI obiettivoKey o pbKey DINAMICHE!
+
             // Mappiamo i dati usando i nomi fissi che sappiamo essere nel tuo CSV (ma con robustezza aggiunta)
             raceData = results.data
                 .filter(row => row.Data && row.Evento)
                 .map(row => {
                     
-                    // Assicuriamo che la chiave 'Città' o 'Citta' o 'città' funzioni
-                    const cittaValue = row['Città'] || row['Citta'] || ''; 
-
+                    // 1. GESTIONE CHIAVE CITTÀ (Cerca la chiave corretta in modo robusto)
+                    const cittaKey = fields.find(f => f && f.toLowerCase().includes('città') || f.toLowerCase().includes('citta')) || 'Città';
+                    
+                    // 2. GESTIONE CHIAVE OBIETTIVO (Cerca la chiave corretta in modo robusto)
+                    const obiettivoKey = fields.find(f => f && f.toLowerCase().includes('obiettivo') && f.toLowerCase().includes('pace')) || 'Pace Target / Obiettivo';
+                    
+                    // 3. GESTIONE CHIAVE PB (La tua chiave è 'PB')
+                    const pbKey = 'PB'; 
+                    
                     return {
-                        ID: row['ID'] || (row['Data'] + row['Evento'] + cittaValue + row['Distanza']), 
+                        ID: row['ID'] || (row['Data'] + row['Evento'] + row[cittaKey] + row['Distanza']), 
                         data: row['Data'],
                         evento: row['Evento'],
                         tipo: row['Tipo'] || '', 
                         distanza: row['Distanza'] || '',
                         
-                        // USA IL VALORE ROBUSTO APPENA TROVATO
-                        citta: cittaValue, 
+                        // USA LA CHIAVE DINAMICA TROVATA
+                        citta: row[cittaKey] || '', 
                         
                         regione: row['Regione'] || '',
                         
-                        // OBIETTIVO: Usiamo la chiave fissa
-                        obiettivo: row['Pace Target / Obiettivo'] || '', 
+                        // USA LA CHIAVE DINAMICA TROVATA
+                        obiettivo: row[obiettivoKey] || '', 
                         
                         tempoFinale: row[tempoFinaleKey] || row['Tempo Finale'] || '', 
                         
-                        // PB: CORREZIONE CRITICA - Aggiungiamo .trim()
-                        pb: row['PB'] && (row['PB'].trim().toLowerCase() === 'x'),
+                        // PB: USA LA CHIAVE FISSA MA CON LA LOGICA TRIM/LOWERCASE
+                        pb: row[pbKey] && (row[pbKey].trim().toLowerCase() === 'x'),
                         
                         sitoWeb: row['Sito Web'] || '',
                     };
@@ -331,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
