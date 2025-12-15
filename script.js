@@ -258,41 +258,47 @@ function renderTable(data) {
 }
 
 function loadDataFromSheet() {
+    // Rendiamo la mappatura più robusta contro i problemi di intestazione (header)
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
-        header: true,
+        // *** IMPORTANTE: Cambiamo header in false per leggere per indice ***
+        header: false,
         complete: (results) => {
-            if (!results.data || results.data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="11" style="color: blue; text-align: center;">Dati caricati, ma il foglio è vuoto.</td></tr>';
+            // Le righe dati sono results.data (la prima riga sono le intestazioni)
+            if (!results.data || results.data.length < 2) { 
+                tableBody.innerHTML = '<tr><td colspan="11" style="color: blue; text-align: center;">Dati caricati, ma non sono state trovate righe.</td></tr>';
                 return;
             }
-
-            // Usiamo i nomi esatti che hai confermato (TempoFinale, Obiettivo, Citta, SitoWeb)
             
-            raceData = results.data
-                // FILTRO: Rimuoviamo il filtro restrittivo qui, lo lasciamo solo su renderTable.
-                // Filtriamo solo righe con almeno una data o un nome evento.
-                .filter(row => row['Data'] || row['Evento']) 
+            // La prima riga (indice 0) è l'intestazione che non mappiamo
+            const rawData = results.data.slice(1);
+
+            // Mappatura basata sull'indice di colonna:
+            // 0: ID, 1: Data, 2: Evento, 3: Tipo, 4: Citta, 5: Regione, 6: Distanza, 7: TempoFinale, 8: PB, 9: Obiettivo, 10: SitoWeb
+
+            raceData = rawData
+                .filter(row => row[1] && row[2]) // Filtra se Data (col 1) ed Evento (col 2) sono presenti
                 .map(row => ({
-                    ID: row['ID'] || (row['Data'] + row['Evento'] + row['Citta'] + row['Distanza']), 
-                    data: row['Data'],
-                    evento: row['Evento'],
-                    tipo: row['Tipo'] || '', 
-                    distanza: row['Distanza'] || '',
+                    ID: row[0] || (row[1] + row[2] + row[4] + row[6]), 
+                    data: row[1],
+                    evento: row[2],
+                    tipo: row[3] || '', 
+                    distanza: row[6] || '',
                     
-                    // CORREZIONE DEFINITIVA NOMI COLONNA
-                    citta: row['Citta'] || '',
-                    regione: row['Regione'] || '',
-                    obiettivo: row['Obiettivo'] || '', 
-                    tempoFinale: row['TempoFinale'] || '', // Corretto: TempoFinale senza spazio
+                    // Mappiamo Città e Obiettivo per indice
+                    citta: row[4] || '',
+                    regione: row[5] || '',
+                    obiettivo: row[9] || '', 
                     
-                    // PB (Confermiamo la logica X + trim)
-                    pb: row['PB'] && (row['PB'].trim().toLowerCase() === 'x'),
+                    tempoFinale: row[7] || '', 
                     
-                    sitoWeb: row['SitoWeb'] || '', // Corretto: SitoWeb senza spazio
+                    // PB (Indice 8)
+                    pb: row[8] && (String(row[8]).trim().toLowerCase() === 'x'),
+                    
+                    sitoWeb: row[10] || '',
                 }));
             
-            // ... (populateFilterSelect)
+            // ... (populateFilterSelect - il resto del codice rimane uguale)
             const types = new Set();
             raceData.forEach(race => {
                 if (race.tipo) {
@@ -308,7 +314,6 @@ function loadDataFromSheet() {
                 filterSelect.appendChild(option);
             });
             
-            // Renderizziamo i dati (che ora dovrebbero essere mappati correttamente)
             renderTable(raceData);
         },
         error: (error) => {
@@ -334,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
