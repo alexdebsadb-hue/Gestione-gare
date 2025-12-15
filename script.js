@@ -113,16 +113,16 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     
     const searchTerm = searchInput.value.toLowerCase().trim();
-    const typeFilter = filterSelect.value;
+    const typeFilter = currentTypeFilter; // Usiamo la variabile di stato del tipo
     const statusFilter = currentStatusFilter; 
 
     const now = new Date();
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate())); 
     
     let filteredData = data.filter(race => {
+        // Logica di filtraggio (rimane invariata)
         const raceDateObject = parseDateObject(race.data);
         const isDateValid = raceDateObject.getTime() !== new Date(0).getTime();
-
         const isPastRace = isDateValid && raceDateObject <= todayUTC; 
         
         const stato = !isDateValid 
@@ -143,6 +143,7 @@ function renderTable(data) {
         return searchMatch && typeMatch && statusMatch;
     });
 
+    // Logica di ordinamento (rimane invariata)
     filteredData.sort((a, b) => {
         const dateA = parseDateObject(a.data);
         const dateB = parseDateObject(b.data);
@@ -152,21 +153,26 @@ function renderTable(data) {
         
         // Ordina dal più recente al più vecchio (decrescente)
         if (dateA > dateB) return -1; 
-        if (dateA < dateB) return 1;  
+        if (dateA < dateB) return 1; 
         return 0;
     }); 
 
     if (filteredData.length === 0) {
         const row = tableBody.insertRow();
-        row.insertCell().colSpan = 11;
+        // Aumenta il colspan a 12 per includere la nuova colonna N.
+        row.insertCell().colSpan = 12; 
         row.cells[0].textContent = "Nessuna gara trovata con i filtri selezionati.";
         row.cells[0].style.textAlign = 'center';
         return;
     }
 
+    // Variabile per contare le righe dopo il filtraggio
+    let rowIndex = 0; 
+    
     filteredData.forEach(race => {
         const row = tableBody.insertRow(); 
-
+        
+        // Calcola lo stato (rimane invariato)
         const raceDateObject = parseDateObject(race.data);
         const isDateValid = raceDateObject.getTime() !== new Date(0).getTime();
         const isPastRace = isDateValid && raceDateObject <= todayUTC; 
@@ -177,10 +183,10 @@ function renderTable(data) {
                 ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata') 
                 : 'In Programma');
         
-        // 1. CORREZIONE COLORI (Logica Tipo Esatto)
+        // Logica CSS (rimane invariata)
         if (race.tipo) {
             const type = race.tipo.toLowerCase().trim();
-            
+            // ... (logica classi CSS) ...
             if (type === 'triathlon') {
                 row.classList.add('race-triathlon'); 
             } else if (type === 'duathlon') {
@@ -192,7 +198,6 @@ function renderTable(data) {
             }
         }
         
-        // Assegna la classe di colore basata sullo STATO (ha la priorità visiva)
         if (stato === 'Ritirata') {
             row.classList.add('status-ritirata');
         } else if (stato === 'Completata') {
@@ -205,6 +210,12 @@ function renderTable(data) {
              row.classList.add('past-race');
         }
 
+        // *** NUOVO: Colonna N. progressivo ***
+        rowIndex++; // Incrementa il contatore per ogni riga visibile
+        const numberCell = row.insertCell();
+        numberCell.textContent = rowIndex;
+        numberCell.style.textAlign = 'center';
+        
         // 1. DATA
         row.insertCell().textContent = isDateValid ? formatDate(race.data) : `[${race.data}] - Data Non Valida`;
         
@@ -214,6 +225,8 @@ function renderTable(data) {
         eventLink.href = `dettaglio.html?id=${race.ID}`; 
         eventLink.textContent = race.evento; 
         eventCell.appendChild(eventLink);
+        
+        // ... (il resto delle colonne rimane come prima, spostato di un indice) ...
         
         // 3. TIPO
         row.insertCell().textContent = race.tipo || '';
@@ -229,7 +242,7 @@ function renderTable(data) {
 
         // 7. OBIETTIVO
         const obiettivoCell = row.insertCell();
-        obiettivoCell.textContent = race.obiettivo || ''; // *** CORREZIONE: Reintrodotto Obiettivo ***
+        obiettivoCell.textContent = race.obiettivo || '';
 
         // 8. RISULTATO
         const resultCell = row.insertCell();
@@ -237,7 +250,7 @@ function renderTable(data) {
 
         // 9. PB
         const pbCell = row.insertCell();
-        pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : ''; // *** CORREZIONE: Reintrodotto PB ***
+        pbCell.textContent = (race.pb && isPastRace) ? '⭐️' : '';
         pbCell.style.textAlign = 'center';
 
         // 10. SITO WEB
@@ -339,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
