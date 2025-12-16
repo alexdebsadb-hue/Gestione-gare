@@ -184,3 +184,94 @@ td a:hover {
     /* Opacità ridotta per adattarsi alla riga */
     color: inherit; 
 }
+/* ==================================== */
+/* STILI PER PAGINA DETTAGLIO (dettaglio.html) */
+/* ==================================== */
+
+.detail-box {
+    background-color: #f8f9fa; 
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.detail-box h2 {
+    color: #343a40;
+    font-size: 1.4em;
+    margin-top: 0;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+/* ------------------------------------ */
+/* DASHBOARD STATISTICHE (stats-box) */
+/* ------------------------------------ */
+
+.stats-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; 
+    margin-top: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-item {
+    flex: 1; 
+    min-width: 180px; 
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stat-label {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.stat-value {
+    font-size: 2.2em;
+    font-weight: 700;
+    color: #007bff; /* Colore primario per i valori */
+    line-height: 1.1;
+}
+
+/* ------------------------------------ */
+/* STILE TABELLA STORICO (historyTable) */
+/* ------------------------------------ */
+
+#historyTable.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.9em;
+}
+
+#historyTable.styled-table th, 
+#historyTable.styled-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#historyTable.styled-table th {
+    background-color: #f8f9fa;
+    color: #495057;
+    font-weight: 600;
+}
+
+/* Colori per gli stati nella tabella */
+.status-completata {
+    background-color: #e6ffed; /* Verde chiaro */
+}
+.status-ritirata {
+    background-color: #fff0f0; /* Rosso chiaro */
+}
+
