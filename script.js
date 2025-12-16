@@ -13,9 +13,9 @@ const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR
 const tableBody = document.getElementById('racesTableBody');
 const searchInput = document.getElementById('searchInput');
 
-// NUOVI RIFERIMENTI per i filtri modificati
-const typeFilterButtonsContainer = document.getElementById('typeFilterButtonsContainer'); // Contenitore dei pulsanti Tipo Gara
-const eventFilterSelect = document.getElementById('eventFilterSelect'); // Select filtro Evento
+// RIFERIMENTI CORRETTI:
+const typeFilterButtonsContainer = document.getElementById('typeFilterButtonsContainer');
+const eventFilterSelect = document.getElementById('eventFilterSelect');
 
 const tabButtons = document.querySelectorAll('.tab-button'); // Pulsanti Stato
 
@@ -405,3 +405,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
