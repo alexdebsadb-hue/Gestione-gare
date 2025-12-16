@@ -303,3 +303,4 @@ function renderSingleRaceDetails(race) {
 }
 
 document.addEventListener('DOMContentLoaded', loadRaceDetails);
+
