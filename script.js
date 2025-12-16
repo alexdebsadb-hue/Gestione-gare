@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del tuo foglio Google, esportato come CSV.
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv';
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636999&single=true&output=csv';
 
 // =========================================================================
 // VARIABILI GLOBALI E FUNZIONI UTILITY
@@ -12,12 +12,17 @@ const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR
 // Ottiene i riferimenti agli elementi HTML
 const tableBody = document.getElementById('racesTableBody');
 const searchInput = document.getElementById('searchInput');
-const filterSelect = document.getElementById('filterSelect');
-const tabButtons = document.querySelectorAll('.tab-button');
+
+// NUOVI RIFERIMENTI per i filtri modificati
+const typeFilterButtonsContainer = document.getElementById('typeFilterButtonsContainer'); // Contenitore dei pulsanti Tipo Gara
+const eventFilterSelect = document.getElementById('eventFilterSelect'); // Select filtro Evento
+
+const tabButtons = document.querySelectorAll('.tab-button'); // Pulsanti Stato
 
 let raceData = [];
 let currentStatusFilter = 'Tutti';
-let currentTypeFilter = 'Tutti'; // Variabile di stato, usata qui solo per coerenza, non per la logica di filtering.
+let currentTypeFilter = 'Tutti'; // Stato per il filtro Tipo Gara (ora pulsanti)
+let currentEventFilter = 'Tutti'; // Stato per il filtro Evento (nuovo select)
 
 
 /**
@@ -68,22 +73,76 @@ function formatDate(dateString) {
 // LOGICA DEI DATI E FILTRAGGIO
 // =========================================================================
 
-function populateFilterSelect(data) {
+/**
+ * Popola il select filtro con tutti i nomi degli eventi unici.
+ */
+function populateEventFilterSelect(data) {
+    const events = new Set();
+    data.forEach(race => {
+        if (race.evento) {
+            events.add(race.evento); // race.evento è già pulito dalla loadData
+        }
+    });
+
+    eventFilterSelect.innerHTML = '<option value="Tutti">Filtra per Evento</option>';
+    Array.from(events).sort().forEach(event => {
+        const option = document.createElement('option');
+        option.value = event;
+        option.textContent = event;
+        eventFilterSelect.appendChild(option);
+    });
+}
+
+/**
+ * Crea e gestisce i pulsanti per il filtro Tipo Gara (sostituisce il vecchio select).
+ */
+function populateTypeFilterButtons(data) {
     const types = new Set();
     data.forEach(race => {
+        // Usiamo il tipo già pulito e in minuscolo dalla loadDataFromSheet
         if (race.tipo) {
             types.add(race.tipo);
         }
     });
 
-    filterSelect.innerHTML = '<option value="Tutti">Tutti i Tipi</option>';
-    Array.from(types).sort().forEach(type => {
-        const option = document.createElement('option');
-        option.value = type;
-        option.textContent = type;
-        filterSelect.appendChild(option);
+    // Per la visualizzazione, convertiamo la prima lettera in maiuscolo (se non vuoto)
+    const formatTypeForDisplay = (type) => {
+        if (type === 'Tutti') return 'Tutti i Tipi';
+        if (!type) return '';
+        return type.charAt(0).toUpperCase() + type.slice(1);
+    };
+
+    const uniqueTypes = ['Tutti', ...Array.from(types).sort()];
+    typeFilterButtonsContainer.innerHTML = '';
+    
+    uniqueTypes.forEach(type => {
+        const button = document.createElement('button');
+        button.textContent = formatTypeForDisplay(type);
+        button.classList.add('tab-button'); // Usiamo la stessa classe dei tab di stato
+        
+        // Il value è il tipo in minuscolo/pulito per il confronto
+        button.setAttribute('data-type-filter', type); 
+
+        if (type === currentTypeFilter) {
+             button.classList.add('active');
+        }
+
+        button.addEventListener('click', (event) => {
+            const newTypeFilter = event.target.getAttribute('data-type-filter');
+            currentTypeFilter = newTypeFilter;
+            
+            // Gestione della classe active
+            document.querySelectorAll('#typeFilterButtonsContainer .tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            filterRaces(); // Ricarica la tabella
+        });
+        typeFilterButtonsContainer.appendChild(button);
     });
 }
+
 
 function filterByStatus(event) {
     const newStatusFilter = event.target.getAttribute('data-status-filter');
@@ -107,9 +166,11 @@ function renderTable(data) {
     tableBody.innerHTML = '';
     
     const searchTerm = searchInput.value.toLowerCase().trim();
-    const typeFilter = filterSelect.value.trim(); // Legge il valore corrente dal Select
+    // Leggiamo i filtri dai nuovi stati globali
+    const typeFilter = currentTypeFilter; 
     const statusFilter = currentStatusFilter;
-
+    const eventFilter = currentEventFilter; // Filtro Evento
+    
     const now = new Date();
     const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
     
@@ -124,16 +185,24 @@ function renderTable(data) {
                 ? (race.tempoFinale && race.tempoFinale.trim() !== '' ? 'Completata' : 'Ritirata')
                 : 'In Programma');
         
+        // FILTRO RICERCA TESTUALE
         const searchMatch = !searchTerm ||
             race.evento.toLowerCase().includes(searchTerm) ||
             race.citta.toLowerCase().includes(searchTerm) ||
             (race.distanza && race.distanza.toLowerCase().includes(searchTerm)) ||
             (race.regione && race.regione.toLowerCase().includes(searchTerm));
 
+        // FILTRO TIPO GARA
         const typeMatch = typeFilter === 'Tutti' || race.tipo === typeFilter;
+        
+        // FILTRO STATO
         const statusMatch = statusFilter === 'Tutti' || stato === statusFilter;
+        
+        // NUOVO FILTRO EVENTO (corrispondenza esatta)
+        const eventMatch = eventFilter === 'Tutti' || race.evento === eventFilter;
 
-        return searchMatch && typeMatch && statusMatch;
+        // COMBINAZIONE DEI FILTRI
+        return searchMatch && typeMatch && statusMatch && eventMatch;
     });
 
     // Logica di ordinamento (dal più recente al più vecchio)
@@ -175,7 +244,7 @@ function renderTable(data) {
         
         // Logica Classi CSS
         if (race.tipo) {
-            const type = race.tipo.toLowerCase().trim();
+            const type = race.tipo; // type è già in minuscolo/pulito
             if (type === 'triathlon') {
                 row.classList.add('race-triathlon');
             } else if (type === 'duathlon') {
@@ -216,7 +285,8 @@ function renderTable(data) {
         eventCell.appendChild(eventLink);
         
         // 3. TIPO
-        row.insertCell().textContent = race.tipo || '';
+        // Visualizza con la prima lettera maiuscola, se presente
+        row.insertCell().textContent = race.tipo ? race.tipo.charAt(0).toUpperCase() + race.tipo.slice(1) : '';
 
         // 4. DISTANZA
         row.insertCell().textContent = race.distanza || '';
@@ -256,6 +326,7 @@ function renderTable(data) {
         row.insertCell().textContent = stato;
     });
 }
+
 function loadDataFromSheet() {
     // PapaParse legge il CSV
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
@@ -280,8 +351,8 @@ function loadDataFromSheet() {
                 .map(row => ({
                     ID: row[0] || (row[1] + row[2] + row[4] + row[6]),
                     data: row[1],
-                    evento: row[2],
-                    tipo: row[3] ? row[3].trim().toLowerCase() : '',
+                    evento: row[2] ? row[2].trim() : '', // Pulisci Evento per il filtro dinamico
+                    tipo: row[3] ? row[3].trim().toLowerCase() : '', // Pulisci e minuscolo per il confronto interno
                     distanza: row[6] || '',
                     citta: row[4] || '',
                     regione: row[5] || '',
@@ -291,8 +362,11 @@ function loadDataFromSheet() {
                     sitoWeb: row[10] || '',
                 }));
             
-            // Popola il menu a tendina per il filtro tipo gara
-            populateFilterSelect(raceData);
+            // Popola il menu a tendina per il filtro Evento
+            populateEventFilterSelect(raceData);
+            
+            // Popola i pulsanti per il filtro Tipo Gara
+            populateTypeFilterButtons(raceData);
             
             renderTable(raceData);
         },
@@ -315,8 +389,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // Event Listener per la ricerca testuale
         searchInput.addEventListener('keyup', filterRaces);
         
-        // Event Listener per il filtro tipo gara (Select)
-        filterSelect.addEventListener('change', filterRaces);
+        // NUOVO Event Listener per il filtro Evento (Select)
+        if (eventFilterSelect) {
+            eventFilterSelect.addEventListener('change', (event) => {
+                currentEventFilter = event.target.value;
+                filterRaces();
+            });
+        }
+        
+        // L'Event Listener per il Tipo Gara è ora gestito all'interno di populateTypeFilterButtons
         
         // Event Listener per i filtri di stato (Pulsanti)
         tabButtons.forEach(button => {
@@ -324,4 +405,3 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
-
