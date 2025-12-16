@@ -13,11 +13,16 @@
     <div class="container">
         <h1>🗓️ Calendario Gare Strategico</h1>
 
-        <div class="filter-controls">
-            <input type="text" id="searchInput" placeholder="Cerca per evento, città o distanza...">
-            <select id="filterSelect">
-                </select>
-        </div>
+       <div class="filter-controls">
+    <input type="text" id="searchInput" placeholder="Cerca per evento, città o distanza...">
+    
+    <select id="eventFilterSelect">
+        <option value="Tutti">Filtra per Evento</option>
+    </select>
+</div>
+
+<div id="typeFilterButtonsContainer" class="tabs-container">
+    </div>
 
         <div id="race-tabs" class="tabs-container">
             <button class="tab-button active" data-status-filter="Tutti">Tutti</button>
@@ -56,6 +61,7 @@
     <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
