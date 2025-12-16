@@ -329,39 +329,54 @@ function renderTable(data) {
 
 function loadDataFromSheet() {
     // PapaParse legge il CSV
-    Papa.parse(GOOGLE_SHEET_CSV_URL, {
+    PaPapa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
-        header: false, // Leggiamo per indice di colonna
-        complete: (results) => {
-            
-            if (!results.data || results.data.length < 2) {
-                // Colspan corretto a 12
-                tableBody.innerHTML = '<tr><td colspan="12" style="color: blue; text-align: center;">Dati caricati, ma non sono state trovate righe.</td></tr>';
-                return;
-            }
+        header: false, // Leggiamo per indice per la mappatura
+        skipEmptyLines: true,
+        complete: function(results) {
             
             const rawData = results.data.slice(1);
-
-            /* Mappatura CSV (Indici):
-             * 0: ID, 1: Data, 2: Evento, 3: Tipo, 4: Citta, 5: Regione, 6: Distanza, 7: TempoFinale, 8: PB, 9: Obiettivo, 10: SitoWeb
-             */
-
-            raceData = rawData
-                .filter(row => row[1] && row[2]) // Filtra se Data ed Evento sono presenti
-                .map(row => ({
-                    ID: row[0] || (row[1] + row[2] + row[4] + row[6]),
-                    data: row[1],
-                    evento: row[2] ? row[2].trim() : '', // Pulisci Evento per il filtro dinamico
-                    tipo: row[3] ? row[3].trim().toLowerCase() : '', // Pulisci e minuscolo per il confronto interno
-                    distanza: row[6] || '',
-                    citta: row[4] || '',
-                    regione: row[5] || '',
-                    obiettivo: row[9] || '',
-                    tempoFinale: row[7] || '',
-                    pb: row[8] && (String(row[8]).trim().toLowerCase() === 'x'),
-                    sitoWeb: row[10] || '',
-                }));
             
+            const allRaceData = rawData
+                .filter(row => row[1] && row[2]) 
+                .map(row => {
+                    
+                    // ESSENZIALE: Puliamo le stringhe per generare ID consistenti
+                    const dataPart = row[1] ? String(row[1]).trim() : ''; 
+                    const eventoPart = row[2] ? String(row[2]).trim() : '';
+                    const cittaPart = row[4] ? String(row[4]).trim() : '';
+                    const distanzaPart = row[6] ? String(row[6]).trim() : '';
+                    
+                    const generatedID = row[0] || (dataPart + eventoPart + cittaPart + distanzaPart);
+                    
+                    const raceDateObject = parseDateObject(row[1]);
+                    const isDateValid = raceDateObject.getTime() !== new Date(0).getTime();
+                    const now = new Date();
+                    const todayUTC = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+                    const isPastRace = isDateValid && raceDateObject <= todayUTC;
+
+                    const stato = !isDateValid
+                        ? 'Data Non Valida'
+                        : (isPastRace
+                            ? (row[7] && row[7].trim() !== '' ? 'Completata' : 'Ritirata')
+                            : 'In Programma');
+                    
+                    return {
+                        // Nuovo ID pulito
+                        ID: generatedID, 
+                        data: row[1],
+                        evento: eventoPart, // Usiamo la versione pulita
+                        tipo: row[3] ? row[3].trim().toLowerCase() : '',
+                        distanza: row[6] || '',
+                        citta: row[4] || '',
+                        regione: row[5] || '',
+                        obiettivo: row[9] || '',
+                        tempoFinale: row[7] || '',
+                        pb: row[8] && (String(row[8]).trim().toLowerCase() === 'x'),
+                        sitoWeb: row[10] || '',
+                        stato: stato 
+                    }
+                });           
             // Popola il menu a tendina per il filtro Evento
             populateEventFilterSelect(raceData);
             
@@ -405,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
 
 
