@@ -3,7 +3,7 @@
 // =========================================================================
 
 // URL del tuo foglio Google, esportato come CSV.
-const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636999&single=true&output=csv';
+const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRE9iZeaiotFKvkb3Vc3dvq9BzmwuFcS414j4f3Ijt4laUQB5qmIjnqzxuk9waD4hv_OgvkMtj7I55b/pub?gid=1426636998&single=true&output=csv';
 
 // =========================================================================
 // VARIABILI GLOBALI E FUNZIONI UTILITY
@@ -405,4 +405,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
 
