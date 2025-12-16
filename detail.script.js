@@ -182,8 +182,8 @@ function loadRaceDetails() {
     const urlParams = new URLSearchParams(window.location.search);
     const raceId = urlParams.get('id');
     
-    // DEBUG: Mostra l'ID che stiamo cercando (dalla URL)
-    console.log("DEBUG: ID Gara cercato (dalla URL):", raceId);
+    // DEBUG 1: Controlla cosa cerchiamo dalla URL
+    console.log("DEBUG: ID Gara cercato (dalla URL):", raceId); 
 
     if (!raceId) {
         document.getElementById('detail-title').textContent = 'ID Gara non trovato.';
@@ -192,16 +192,24 @@ function loadRaceDetails() {
 
     Papa.parse(GOOGLE_SHEET_CSV_URL, {
         download: true,
-        header: false, // Leggiamo per indice per la mappatura
+        header: false,
         skipEmptyLines: true,
         complete: function(results) {
             
-            // --- Mappatura e Pulizia Iniziale ---
             const rawData = results.data.slice(1);
             
             const allRaceData = rawData
                 .filter(row => row[1] && row[2]) 
                 .map(row => {
+                    
+                    // Aggiungiamo .trim() alle parti usate per l'ID, essenziale per il match!
+                    const dataPart = row[1] ? String(row[1]).trim() : ''; 
+                    const eventoPart = row[2] ? String(row[2]).trim() : '';
+                    const cittaPart = row[4] ? String(row[4]).trim() : '';
+                    const distanzaPart = row[6] ? String(row[6]).trim() : '';
+                    
+                    const generatedID = row[0] || (dataPart + eventoPart + cittaPart + distanzaPart);
+                    
                     const raceDateObject = parseDateObject(row[1]);
                     const isDateValid = raceDateObject.getTime() !== new Date(0).getTime();
                     const now = new Date();
@@ -214,13 +222,11 @@ function loadRaceDetails() {
                             ? (row[7] && row[7].trim() !== '' ? 'Completata' : 'Ritirata')
                             : 'In Programma');
                     
-                    const generatedID = row[0] || (row[1] + row[2] + row[4] + row[6]);
-                    
                     return {
-                        // VERIFICA CHE QUESTO MATCH sia IDENTICO a index_script.js
+                        // Nuovo ID pulito
                         ID: generatedID, 
                         data: row[1],
-                        evento: row[2] ? row[2].trim() : '',
+                        evento: eventoPart, // Usiamo la versione pulita
                         tipo: row[3] ? row[3].trim().toLowerCase() : '',
                         distanza: row[6] || '',
                         citta: row[4] || '',
@@ -232,9 +238,8 @@ function loadRaceDetails() {
                         stato: stato 
                     }
                 });
-            // -----------------------------------------------------------------
 
-            // DEBUG: Mostra il primo ID generato per un confronto rapido
+            // DEBUG 2: Controlla il primo ID generato (per un confronto rapido)
             if (allRaceData.length > 0) {
                  console.log("DEBUG: Primo ID generato dal CSV:", allRaceData[0].ID);
             }
@@ -242,13 +247,13 @@ function loadRaceDetails() {
             const currentRace = allRaceData.find(race => race.ID === raceId);
             
             if (!currentRace) {
-                // DEBUG: ERRORE se l'ID cercato non è nell'array
-                console.error("ERRORE DI MATCH: La gara con ID " + raceId + " non è stata trovata nell'elenco 'allRaceData'. Controlla la logica di generazione ID in entrambi gli script.");
+                // DEBUG 3: Errore se non trova corrispondenza
+                console.error("ERRORE DI MATCH: La gara con ID " + raceId + " non è stata trovata.");
                 document.getElementById('detail-title').textContent = 'Dettagli della gara non trovati.';
                 return;
             }
             
-            // DEBUG: Gara trovata con successo
+            // DEBUG 4: Successo
             console.log("DEBUG: Trovata la gara:", currentRace.evento);
 
             // 1. Renderizza i dettagli della singola gara
@@ -317,5 +322,6 @@ function renderSingleRaceDetails(race) {
 }
 
 document.addEventListener('DOMContentLoaded', loadRaceDetails);
+
 
 
